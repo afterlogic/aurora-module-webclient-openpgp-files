@@ -7,14 +7,14 @@ var
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
-	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
+	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
 ;
 /**
  * @constructor
  */
-function SelectKeyOrPasswordPopup()
+function EncryptFilePopup()
 {
 	CAbstractPopup.call(this);
 
@@ -79,11 +79,11 @@ function SelectKeyOrPasswordPopup()
 	}, this);
 }
 
-_.extendOwn(SelectKeyOrPasswordPopup.prototype, CAbstractPopup.prototype);
+_.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
 
-SelectKeyOrPasswordPopup.prototype.PopupTemplate = '%ModuleName%_SelectKeyOrPasswordPopup';
+EncryptFilePopup.prototype.PopupTemplate = '%ModuleName%_EncryptFilePopup';
 
-SelectKeyOrPasswordPopup.prototype.onOpen = async function (fOnKeyOrPasswordSelectedCallback, fOnCancellCallback)
+EncryptFilePopup.prototype.onOpen = async function (fOnKeyOrPasswordSelectedCallback, fOnCancellCallback)
 {
 	this.fOnKeyOrPasswordSelectedCallback = fOnKeyOrPasswordSelectedCallback;
 	this.fOnCancellCallback = fOnCancellCallback;
@@ -91,7 +91,7 @@ SelectKeyOrPasswordPopup.prototype.onOpen = async function (fOnKeyOrPasswordSele
 	this.keys(OpenPgpEncryptor.getKeys());
 };
 
-SelectKeyOrPasswordPopup.prototype.cancelPopup = function ()
+EncryptFilePopup.prototype.cancelPopup = function ()
 {
 	if (_.isFunction(this.fOnCancellCallback))
 	{
@@ -101,7 +101,7 @@ SelectKeyOrPasswordPopup.prototype.cancelPopup = function ()
 	this.closePopup();
 };
 
-SelectKeyOrPasswordPopup.prototype.clearPopup = function ()
+EncryptFilePopup.prototype.clearPopup = function ()
 {
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
@@ -110,39 +110,12 @@ SelectKeyOrPasswordPopup.prototype.clearPopup = function ()
 	this.encryptedFilePassword('');
 };
 
-SelectKeyOrPasswordPopup.prototype.onShow = function ()
-{
-};
-
-SelectKeyOrPasswordPopup.prototype.encrypt = async function ()
+EncryptFilePopup.prototype.encrypt = async function ()
 {
 	this.isEncrypting(true);
 	if (_.isFunction(this.fOnKeyOrPasswordSelectedCallback))
 	{
-		let oResult = await this.fOnKeyOrPasswordSelectedCallback(this.recipientAutocompleteItem().email, this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password);
-		this.isEncrypting(false);
-		if (this.recipientAutocompleteItem().hasKey)
-		{
-			this.sendButtonText(TextUtils.i18n('%MODULENAME%/ACTION_SEND_ENCRYPTED_EMAIL'));
-			if (this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password)
-			{
-				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_STORE_PASSWORD'));
-			}
-			else
-			{
-				const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().emaill;
-				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_EMAIL', {'USER': sUserName}));
-			}
-		}
-		else
-		{
-			this.sendButtonText(TextUtils.i18n('%MODULENAME%/ACTION_SEND_EMAIL'));
-			this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_EMAIL'));
-		}
-		if (oResult && oResult.result)
-		{
-			this.showResults(oResult);
-		}
+		this.fOnKeyOrPasswordSelectedCallback(this.recipientAutocompleteItem().email, this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password);
 	}
 };
 
@@ -150,7 +123,7 @@ SelectKeyOrPasswordPopup.prototype.encrypt = async function ()
  * @param {object} oRequest
  * @param {function} fResponse
  */
-SelectKeyOrPasswordPopup.prototype.autocompleteCallback = function (oRequest, fResponse)
+EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
 	const fAutocompleteCallback = ModulesManager.run('ContactsWebclient',
 		'getSuggestionsAutocompleteCallback',
@@ -177,16 +150,38 @@ SelectKeyOrPasswordPopup.prototype.autocompleteCallback = function (oRequest, fR
 	}
 };
 
-SelectKeyOrPasswordPopup.prototype.showResults = function (oData)
+EncryptFilePopup.prototype.showResults = function (oData)
 {
-	const {password, link} = oData;
+	const {result, password, link} = oData;
+	if (result)
+	{
+		if (this.recipientAutocompleteItem().hasKey)
+		{
+			this.sendButtonText(TextUtils.i18n('%MODULENAME%/ACTION_SEND_ENCRYPTED_EMAIL'));
+			if (this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password)
+			{
+				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_STORE_PASSWORD'));
+			}
+			else
+			{
+				const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().emaill;
+				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_EMAIL', {'USER': sUserName}));
+			}
+		}
+		else
+		{
+			this.sendButtonText(TextUtils.i18n('%MODULENAME%/ACTION_SEND_EMAIL'));
+			this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_EMAIL'));
+		}
+		this.isSuccessfullyEncryptedAndUploaded(true);
+		this.encryptedFileLink(link);
+		this.encryptedFilePassword(password);
+	}
+	this.isEncrypting(false);
 
-	this.isSuccessfullyEncryptedAndUploaded(true);
-	this.encryptedFileLink(link);
-	this.encryptedFilePassword(password);
 };
 
-SelectKeyOrPasswordPopup.prototype.sendEmail = async function ()
+EncryptFilePopup.prototype.sendEmail = async function ()
 {
 	const sSubject = TextUtils.i18n('%MODULENAME%/MESSAGE_SUBJECT');
 
@@ -235,7 +230,6 @@ SelectKeyOrPasswordPopup.prototype.sendEmail = async function ()
 	}
 	else
 	{//message is not encrypted
-		
 		const sBody = TextUtils.i18n('%MODULENAME%/MESSAGE_BODY', {'URL': this.encryptedFileLink()});
 			this.composeMessageWithData({
 				to: this.recipientAutocompleteItem().value,
@@ -248,4 +242,4 @@ SelectKeyOrPasswordPopup.prototype.sendEmail = async function ()
 	}
 };
 
-module.exports = new SelectKeyOrPasswordPopup();
+module.exports = new EncryptFilePopup();

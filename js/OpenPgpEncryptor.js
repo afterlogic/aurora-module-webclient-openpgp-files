@@ -1,6 +1,6 @@
 'use strict';
 
-var
+let
 	_ = require('underscore'),
 	$ = require('jquery'),
 	ko = require('knockout'),
@@ -58,7 +58,7 @@ OpenPgpEncryptor.prototype.getKeysObservable = function ()
  */
 OpenPgpEncryptor.prototype.reloadKeysFromStorage = function ()
 {
-	var
+	let
 		aKeys = [],
 		oOpenpgpKeys = this.oKeyring.getAllKeys()
 	;
@@ -91,7 +91,7 @@ OpenPgpEncryptor.prototype.convertToNativeKeys = function (aKeys)
  */
 OpenPgpEncryptor.prototype.cloneKey = async function (oKey)
 {
-	var oPrivateKey = null;
+	let oPrivateKey = null;
 	if (oKey)
 	{
 		oPrivateKey = await openpgp.key.readArmored(oKey.armor());
@@ -153,7 +153,7 @@ OpenPgpEncryptor.prototype.decryptKeyHelper = async function (oResult, oKey, sPa
  */
 OpenPgpEncryptor.prototype.splitKeys = function (sArmor)
 {
-	var
+	let
 		aResult = [],
 		iCount = 0,
 		iLimit = 30,
@@ -199,7 +199,7 @@ OpenPgpEncryptor.prototype.getArmorInfo = async function (sArmor)
 {
 	sArmor = $.trim(sArmor);
 
-	var
+	let
 		iIndex = 0,
 		iCount = 0,
 		oKey = null,
@@ -267,9 +267,9 @@ OpenPgpEncryptor.prototype.findKeyByID = function (sID, bPublic)
 	bPublic = !!bPublic;
 	sID = sID.toLowerCase();
 	
-	var oKey = _.find(this.keys(), oKey => {
+	let oKey = _.find(this.keys(), oKey => {
 		
-		var
+		let
 			oResult = false,
 			aKeys = null
 		;
@@ -300,13 +300,13 @@ OpenPgpEncryptor.prototype.findKeyByID = function (sID, bPublic)
 OpenPgpEncryptor.prototype.findKeysByEmails = function (aEmail, bIsPublic, oResult)
 {
 	bIsPublic = !!bIsPublic;
-	
-	var
+
+	let
 		aResult = [],
 		aKeys = this.keys()
 	;
 	_.each(aEmail, sEmail => {
-		var oKey = _.find(aKeys, oKey => {
+		let oKey = _.find(aKeys, oKey => {
 			return oKey && bIsPublic === oKey.isPublic() && sEmail === oKey.getEmail();
 		});
 
@@ -333,7 +333,7 @@ OpenPgpEncryptor.prototype.findKeysByEmails = function (aEmail, bIsPublic, oResu
  */
 OpenPgpEncryptor.prototype.getPublicKeysIfExistsByEmail = function (sEmail)
 {
-	var
+	let
 		aResult = [],
 		aKeys = this.keys(),
 		oKey = _.find(aKeys, oKey => {
@@ -356,7 +356,7 @@ OpenPgpEncryptor.prototype.getPublicKeysIfExistsByEmail = function (sEmail)
  */
 OpenPgpEncryptor.prototype.verifyKeyPassword = async function (oKey, sPrivateKeyPassword)
 {
-	var
+	let
 		oResult = new COpenPgpResult(),
 		oPrivateKey = this.convertToNativeKeys([oKey])[0],
 		oPrivateKeyClone = await this.cloneKey(oPrivateKey)
@@ -434,7 +434,9 @@ OpenPgpEncryptor.prototype.encryptMessage = async function (sMessage, sPrincipal
 {
 	let
 		oResult = new COpenPgpResult(),
-		aPublicKeys = this.findKeysByEmails([sPrincipalsEmail], true, oResult)
+		sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '',
+		aEmailForEncrypt = this.findKeysByEmails([sUserEmail], true).length > 0 ? [sPrincipalsEmail, sUserEmail] : [sPrincipalsEmail],
+		aPublicKeys = this.findKeysByEmails(aEmailForEncrypt, true, oResult)
 	;
 
 	oResult.result = false;

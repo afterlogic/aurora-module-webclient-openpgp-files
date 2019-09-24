@@ -8,7 +8,7 @@ function IsPgpSupported()
 }
 
 module.exports =  oAppData => {
-	var
+	let
 		App = require('%PathToCoreWebclientModule%/js/App.js'),
 		oButtonsView = null
 	;

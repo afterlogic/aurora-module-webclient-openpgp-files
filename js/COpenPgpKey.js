@@ -1,6 +1,6 @@
 'use strict';
 
-var AddressUtils = require('%PathToCoreWebclientModule%/js/utils/Address.js');
+let AddressUtils = require('%PathToCoreWebclientModule%/js/utils/Address.js');
 
 /**
  * @todo
@@ -11,7 +11,7 @@ function COpenPgpKey(oOpenPgpKey)
 {
 	this.pgpKey = oOpenPgpKey;
 
-	var oPrimaryUser = this.pgpKey.getPrimaryUser();
+	let oPrimaryUser = this.pgpKey.getPrimaryUser();
 	
 	this.user = (oPrimaryUser && oPrimaryUser.user) ? oPrimaryUser.user.userId.userid :
 		(this.pgpKey.users && this.pgpKey.users[0] ? this.pgpKey.users[0].userId.userid : '');

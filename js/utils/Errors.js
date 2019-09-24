@@ -1,6 +1,6 @@
 'use strict';
 
-var
+let
 	_ = require('underscore'),
 	
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
@@ -17,7 +17,7 @@ var
  */
 ErrorsUtils.showPgpErrorByCode = function (oRes, sPgpAction, sDefaultError)
 {
-	var
+	let
 		aErrors = _.isArray(oRes.errors) ? oRes.errors : [],
 		aNotices = _.isArray(oRes.notices) ? oRes.notices : [],
 		aEmailsWithoutPublicKey = [],
@@ -27,7 +27,7 @@ ErrorsUtils.showPgpErrorByCode = function (oRes, sPgpAction, sDefaultError)
 		bNotice = true
 	;
 	
-	_.each(_.union(aErrors, aNotices), function (aError) {
+	_.each(_.union(aErrors, aNotices), aError => {
 		if (aError.length === 2)
 		{
 			switch(aError[0])
