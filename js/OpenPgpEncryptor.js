@@ -10,8 +10,7 @@ let
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	openpgp = require('%PathToCoreWebclientModule%/js/vendors/openpgp.js'),
 	COpenPgpKey = require('modules/%ModuleName%/js/COpenPgpKey.js'),
-	COpenPgpResult = require('modules/%ModuleName%/js/COpenPgpResult.js'),
-	Enums = require('modules/%ModuleName%/js/Enums.js')
+	COpenPgpResult = require('modules/%ModuleName%/js/COpenPgpResult.js')
 ;
 
 /**
@@ -350,26 +349,8 @@ OpenPgpEncryptor.prototype.getPublicKeysIfExistsByEmail = function (sEmail)
 };
 
 /**
- * @param {object} oKey
- * @param {string} sPrivateKeyPassword
- * @returns {object}
- */
-OpenPgpEncryptor.prototype.verifyKeyPassword = async function (oKey, sPrivateKeyPassword)
-{
-	let
-		oResult = new COpenPgpResult(),
-		oPrivateKey = this.convertToNativeKeys([oKey])[0],
-		oPrivateKeyClone = await this.cloneKey(oPrivateKey)
-	;
-
-	await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPrivateKeyPassword, '');
-
-	return oResult;
-};
-
-/**
  * @param {blob} oBlob
- * @param {string} aPrincipalsEmail
+ * @param {string} sPrincipalsEmail
  * @param {boolean} bPasswordBasedEncryption
  * @return {COpenPgpResult}
  */
@@ -416,12 +397,73 @@ OpenPgpEncryptor.prototype.encryptData = async function (oBlob, sPrincipalsEmail
 			oResult.addExceptionMessage(e, Enums.OpenPgpErrors.EncryptError);
 		}
 	}
+
+	return oResult;
+};
+
+/**
+ * @param {blob} oBlob
+ * @param {string} sAccountEmail
+ * @param {string} sPassword
+ * @param {boolean} sPassword
+ * @return {string}
+ */
+OpenPgpEncryptor.prototype.decryptData = async function (oBlob, sAccountEmail, sPassword, bPasswordBasedEncryption)
+{
+	let
+		oResult = new COpenPgpResult(),
+		buffer = await new Response(oBlob).arrayBuffer(),
+		aPrivateKeys = [],
+		oOptions = {
+			message: await openpgp.message.read(new Uint8Array(buffer)),
+			format: 'binary'
+		}
+	;
+
+	oResult.result = false;
+	if (bPasswordBasedEncryption)
+	{
+		oOptions.passwords = [sPassword];
+	}
 	else
 	{
-		oResult.addError(Enums.OpenPgpErrors.EncryptError);
+		aPrivateKeys = this.findKeysByEmails([sAccountEmail], false, oResult);
+		if (aPrivateKeys && aPrivateKeys.length > 0)
+		{
+			let
+				oPrivateKey = this.convertToNativeKeys(aPrivateKeys)[0],
+				oPrivateKeyClone = await this.cloneKey(oPrivateKey)
+			;
+			await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPassword, sAccountEmail);
+			oOptions.privateKeys = oPrivateKeyClone;
+		}
+	}
+
+	if (!oResult.hasErrors())
+	{
+		try
+		{
+			let oPgpResult = await openpgp.decrypt(oOptions);
+			oResult.result = oPgpResult.data;
+		}
+		catch (e)
+		{
+			oResult.addExceptionMessage(e, Enums.OpenPgpErrors.DecryptError);
+		}
 	}
 
 	return oResult;
+};
+
+/**
+ * @param {Blob} oBlob
+ * @return {boolean}
+ */
+OpenPgpEncryptor.prototype.isDataEncryptedWithPassword = async function (oBlob)
+{
+	let buffer = await new Response(oBlob).arrayBuffer();
+	let message = await openpgp.message.read(new Uint8Array(buffer));
+	return !!message.packets.findPacket(openpgp.enums.packet.symEncryptedSessionKey);
 };
 
 /**

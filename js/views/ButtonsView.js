@@ -11,8 +11,6 @@ let
  */
 function ButtonsView()
 {
-	this.oFilesView = null;
-	this.oFile = null;
 }
 
 ButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
@@ -23,7 +21,7 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
-			OpenPgpFileProcessor.processFile(selectedItem(), oFilesView);
+			OpenPgpFileProcessor.processFileEncryption(selectedItem(), oFilesView);
 		},
 		() => {//button is active only when one file is selected
 			return selectedItem() !== null

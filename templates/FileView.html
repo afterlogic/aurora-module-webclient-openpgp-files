@@ -1,0 +1,26 @@
+<div class="sharing_panel large">
+	<div class="item file">
+		<div class="item_content">
+			<span class="data">
+				<span class="icon"></span>
+				<span class="name" data-bind="text: fileName"></span>
+				<span class="size" data-bind="text: fileSize"></span>
+			</span>
+		</div>
+	</div>
+	<div class="fields">
+		<div class="fieldset">
+			<div class="row" data-bind="visible: isDecryptionAvailable()">
+				<span class="label" data-bind="text: passwordLabel"></span>
+				<input autocomplete="new-password" type="password" class="value input" data-bind="value: password" />
+			</div>
+		</div>
+	</div>
+	<span class="buttons">
+		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
+			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
+			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
+		</span>
+		<a class="button download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}"></a>
+	</span>
+</div>

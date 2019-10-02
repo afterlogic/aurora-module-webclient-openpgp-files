@@ -1,6 +1,6 @@
 'use strict';
 
-var
+let
 	_ = require('underscore'),
 	ko = require('knockout'),
 
