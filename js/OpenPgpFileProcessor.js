@@ -25,12 +25,16 @@ function OpenPgpFileProcessor()
 {
 	this.oFile = null;
 	this.oFilesView = null;
+	this.sStorageType = null;
+	this.sPath = null;
 }
 
 OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView)
 {
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
+	this.sPath = oFilesView.currentPath();
+	this.sStorageType = oFilesView.storageType();
 	let oBlob = await this.downloadFile();
 	let oResultData = {result: false};
 	if (oBlob instanceof Blob)
@@ -62,6 +66,8 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 	}
 	this.oFile = null;
 	this.oFilesView = null;
+	this.sStorageType = null;
+	this.sPath = null;
 };
 
 OpenPgpFileProcessor.prototype.downloadFile = async function ()
@@ -227,8 +233,8 @@ OpenPgpFileProcessor.prototype.uploadFile = async function (oBlob, sNewFileName,
 	let oFormData = new FormData();
 	let {password, recipientEmail} = oEncryptionResult;
 	let oParameters = {
-		Type:			this.oFilesView.storageType(),
-		Path:			this.oFilesView.currentPath(),
+		Type:			this.sStorageType,
+		Path:			this.sPath,
 		SubPath:		'',
 		ExtendedProps:	{
 			PgpEncryptionMode: password ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key,
