@@ -23,13 +23,13 @@
 					<div class="row">
 						<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPTION_TYPE'}"></span>
 						<span class="value">
-							<label class="custom_radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Key, 'disabled': keyBasedEncryptionDisabled}">
+							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Key, 'disabled': keyBasedEncryptionDisabled}">
 								<span class="icon"></span>
 								<input type="radio" id="tab_key" data-bind="checked: keyBasedEncryptionDisabled() ? false : encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Key}" />
 							</label>
 							<label for="tab_key" data-bind="i18n: {'key': '%MODULENAME%/LABEL_KEY_BASED_ENCRYPTION'}, css: {'hint': keyBasedEncryptionDisabled}"></label>
 
-							<label class="custom_radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Password, 'disabled': passwordBasedEncryptionDisabled}">
+							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Password, 'disabled': passwordBasedEncryptionDisabled}">
 								<span class="icon"></span>
 								<input type="radio" id="tab_password" data-bind="checked: passwordBasedEncryptionDisabled() ? false : encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Password}" />
 							</label>
