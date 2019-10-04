@@ -31,10 +31,10 @@ function CFileView()
 	switch (this.encryptionMode)
 	{
 		case Enums.EncryptionBasedOn.Key:
-			this.passwordLabel = "Enter passphrase for PGP key " + this.recipientEmail;
+			this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSPHRASE', {'KEY': this.recipientEmail});
 			break;
 		case Enums.EncryptionBasedOn.Password:
-			this.passwordLabel = "Enter password";
+			this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSWORD');
 			break;
 		default:
 			//Encryption mode not defined
