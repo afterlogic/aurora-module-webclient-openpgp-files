@@ -27,7 +27,8 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
 				&& selectedItem() instanceof CFileModel
-				&& oFilesView.storageType() === Enums.FileStorageType.Personal;
+				&& (oFilesView.storageType() === Enums.FileStorageType.Personal
+					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted);
 		}
 	);
 };
