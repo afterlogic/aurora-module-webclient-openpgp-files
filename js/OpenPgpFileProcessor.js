@@ -35,35 +35,31 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 	this.oFilesView = oFilesView;
 	this.sPath = oFilesView.currentPath();
 	this.sStorageType = oFilesView.storageType();
-	let oBlob = await this.downloadFile();
 	let oResultData = {result: false};
-	if (oBlob instanceof Blob)
+	let oEncryptionResult = await this.encryptFile();
+	if (oEncryptionResult && oEncryptionResult.result)
 	{
-		let oEncryptionResult = await this.encryptFile(oBlob);
-		if (oEncryptionResult && oEncryptionResult.result)
-		{
-			//add gpg extension to encrypted file
-			const sNewFileName = this.getGPGFileName(this.oFile.fileName(), oEncryptionResult.recipientEmail);
-			let bUploadResult = await this.uploadFile(oEncryptionResult.blob, sNewFileName, oEncryptionResult);
-			if (bUploadResult)
+		//add gpg extension to encrypted file
+		const sNewFileName = this.getGPGFileName(this.oFile.fileName(), oEncryptionResult.recipientEmail);
+		let bUploadResult = await this.uploadFile(oEncryptionResult.blob, sNewFileName, oEncryptionResult);
+		if (bUploadResult)
+			{
+				let sPublicLink = await this.createPublicLink(
+					this.oFile.storageType(),
+					this.oFile.path(),
+					sNewFileName,
+					oEncryptionResult.blob.size
+				);
+				if (sPublicLink)
 				{
-					let sPublicLink = await this.createPublicLink(
-						this.oFile.storageType(),
-						this.oFile.path(),
-						sNewFileName,
-						oEncryptionResult.blob.size
-					);
-					if (sPublicLink)
-					{
-						this.oFilesView.refresh();
-						oResultData.result = true;
-						oResultData.password = oEncryptionResult.password;
-						oResultData.link = sPublicLink;
-					}
+					this.oFilesView.refresh();
+					oResultData.result = true;
+					oResultData.password = oEncryptionResult.password;
+					oResultData.link = sPublicLink;
 				}
-		}
-		EncryptFilePopup.showResults(oResultData);
+			}
 	}
+	EncryptFilePopup.showResults(oResultData);
 	this.oFile = null;
 	this.oFilesView = null;
 	this.sStorageType = null;
@@ -128,21 +124,48 @@ OpenPgpFileProcessor.prototype.downloadFile = async function ()
 	return oBlob;
 };
 
-OpenPgpFileProcessor.prototype.encryptFile = async function (oBlob)
+OpenPgpFileProcessor.prototype.encryptFile = async function ()
 {
 	let oResult = {
 		result: false
 	};
-	let oPromiseSelectKeyOrPassword = new Promise(async (resolve, reject) => {
-		const fResolveCallback = (recipientEmail, isPasswordMode) => {
-			resolve({
-				recipientEmail: recipientEmail,
-				isPasswordMode: isPasswordMode
-			});
+	let oPromiseEncryptFile = new Promise(async (resolve, reject) => {
+		const fResolveCallback = async (recipientEmail, isPasswordMode) => {
+			let oBlob = await this.downloadFile();
+			if (oBlob instanceof Blob)
+			{
+				//file encryption
+				let oEncryptionResult = await OpenPgpEncryptor.encryptData(
+					oBlob,
+					recipientEmail,
+					isPasswordMode
+				);
+				if (!oEncryptionResult.result)
+				{
+					ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
+				}
+				else
+				{
+					let {data, password} = oEncryptionResult.result;
+					let oResBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
+					let oResult = {
+						result: true,
+						blob: oResBlob,
+						password: password,
+						recipientEmail: recipientEmail
+					};
+					resolve(oResult);
+
+					return false;
+				}
+			}
+
+			return true;
 		};
 		const fRejectCallback = () => {
 			reject(false);
 		};
+		//showing popup to select recipient and encryption mode
 		Popups.showPopup(EncryptFilePopup, [
 			fResolveCallback,
 			fRejectCallback
@@ -151,37 +174,12 @@ OpenPgpFileProcessor.prototype.encryptFile = async function (oBlob)
 
 	try
 	{
-		//showing popup to select recipient and encryption mode
-		let {recipientEmail, isPasswordMode} = await oPromiseSelectKeyOrPassword;
-		//file encryption
-		let oEncryptionResult = await OpenPgpEncryptor.encryptData(
-			oBlob,
-			recipientEmail,
-			isPasswordMode
-		);
-		let oResult = {
-			result: false
-		};
-		if (!oEncryptionResult.result)
-		{
-			ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
-		}
-		else
-		{
-			let {data, password} = oEncryptionResult.result;
-			let oResBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
-			oResult.result = true;
-			oResult.blob = oResBlob;
-			oResult.password = password;
-			oResult.recipientEmail = recipientEmail;
-		}
-
-		return oResult;
+		oResult = await oPromiseEncryptFile;
 	}
 	catch (oError)
-	{
-		return oResult;
-	}
+	{}
+
+	return oResult;
 };
 
 OpenPgpFileProcessor.prototype.decryptFile = async function (oBlob, sRecipientEmail, sPassword, bPasswordBasedEncryption)

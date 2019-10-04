@@ -115,7 +115,11 @@ EncryptFilePopup.prototype.encrypt = async function ()
 	this.isEncrypting(true);
 	if (_.isFunction(this.fOnKeyOrPasswordSelectedCallback))
 	{
-		this.fOnKeyOrPasswordSelectedCallback(this.recipientAutocompleteItem().email, this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password);
+		let bResult = await this.fOnKeyOrPasswordSelectedCallback(this.recipientAutocompleteItem().email, this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password);
+		if (bResult)
+		{
+			this.isEncrypting(false);
+		}
 	}
 };
 
@@ -178,7 +182,6 @@ EncryptFilePopup.prototype.showResults = function (oData)
 		this.encryptedFilePassword(password);
 	}
 	this.isEncrypting(false);
-
 };
 
 EncryptFilePopup.prototype.sendEmail = async function ()
