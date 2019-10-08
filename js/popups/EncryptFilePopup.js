@@ -203,11 +203,10 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 		}
 		else
 		{
-			const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().emaill;
 			sBody = TextUtils.i18n('%MODULENAME%/ENCRYPTED_WITH_KEY_MESSAGE_BODY',
 				{
 					'URL': this.encryptedFileLink(),
-					'USER': sUserName,
+					'USER': this.recipientAutocompleteItem().email,
 					'BR': '\r\n'
 				}
 			);
