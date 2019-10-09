@@ -133,24 +133,47 @@ EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 		'getSuggestionsAutocompleteCallback',
 		['all', App.getUserPublicId(), /*bWithGroups*/ false]
 	);
-	const fMarkRecepientsWithKeyCallback = (aRecipienstList) => {
+	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
 		let aPublicKeys = this.publicKeys();
+		let iOwnPublicKeyIndex = aPublicKeys.indexOf(App.getUserPublicId());
+		if (iOwnPublicKeyIndex > -1)
+		{//remove own public key from list
+			aPublicKeys.splice(iOwnPublicKeyIndex, 1);
+		}
 		aRecipienstList.forEach(oRecipient => {
-			if (aPublicKeys.indexOf(oRecipient.email) !== -1)
+			const iIndex = aPublicKeys.indexOf(oRecipient.email);
+			if (iIndex > -1)
 			{
 				oRecipient.hasKey = true;
+				//remove key from list when recipient is marked
+				aPublicKeys.splice(iIndex, 1);
 			}
 			else
 			{
 				oRecipient.hasKey = false;
 			}
 		});
+		aPublicKeys.forEach(sPublicKey => {
+			aRecipienstList.push(
+				{
+					label: sPublicKey,
+					value: sPublicKey,
+					name: sPublicKey,
+					email: sPublicKey,
+					frequency: 0,
+					id: 0,
+					team: false,
+					sharedToAll: false,
+					hasKey: true
+				}
+			);
+		});
 		fResponse(aRecipienstList);
 	};
 	if (_.isFunction(fAutocompleteCallback))
 	{
 		this.recipientAutocompleteItem(null);
-		fAutocompleteCallback(oRequest, fMarkRecepientsWithKeyCallback);
+		fAutocompleteCallback(oRequest, fMarkRecipientsWithKeyCallback);
 	}
 };
 
