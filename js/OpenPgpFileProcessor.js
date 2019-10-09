@@ -380,7 +380,7 @@ OpenPgpFileProcessor.prototype.processFileDecryption = async function (sFileName
 		let oDecryptionResult = await this.decryptFile(oBlob, sRecipientEmail, sPassword, sEncryptionMode === Enums.EncryptionBasedOn.Password);
 		if (oDecryptionResult.result)
 		{
-			this.saveBlob(oDecryptionResult.blob, Utils.getFileNameWithoutExtension(sFileName));
+			this.saveBlob(oDecryptionResult.blob, this.getFileNameForDownload(sFileName, sRecipientEmail));
 			return true;
 		}
 	}
@@ -388,6 +388,29 @@ OpenPgpFileProcessor.prototype.processFileDecryption = async function (sFileName
 	{
 		return false;
 	}
+};
+
+OpenPgpFileProcessor.prototype.getFileNameForDownload = function (sFileName, sRecipientEmail)
+{
+	const sFileNameWithoutExtension = Utils.getFileNameWithoutExtension(sFileName);
+	const sDelimiter = '_' + sRecipientEmail;
+	const aNameParts = sFileNameWithoutExtension.split(sDelimiter);
+	let sNewName = '';
+	if (aNameParts.length <= 2)
+	{
+		sNewName = aNameParts.join('');
+	}
+	else
+	{
+		//If the files name contains more than one entry of a recipient email, only the last entry is removed
+		for (let i = 0; i < aNameParts.length; i++)
+		{
+			sNewName += aNameParts[i];
+			sNewName += i < (aNameParts.length - 2) ? sDelimiter : '';
+		}
+	}
+
+	return sNewName;
 };
 
 module.exports = new OpenPgpFileProcessor();
