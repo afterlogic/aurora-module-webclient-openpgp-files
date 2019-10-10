@@ -9,7 +9,8 @@ let
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
+	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
+	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
 /**
  * @constructor
@@ -230,7 +231,8 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 				{
 					'URL': this.encryptedFileLink(),
 					'USER': this.recipientAutocompleteItem().email,
-					'BR': '\r\n'
+					'BR': '\r\n',
+					'SYSNAME': Settings.ProductName
 				}
 			);
 		}

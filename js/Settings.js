@@ -8,6 +8,7 @@ let
 module.exports = {
 	ServerModuleName: 'OpenPgpFilesWebclient',
 	HashModuleName: 'openpgp-files',
+	ProductName: '',
 
 	PublicFileData: {},
 	/**
@@ -18,12 +19,17 @@ module.exports = {
 	init: function (oAppData)
 	{
 		let
-			oAppDataOpenPgpFilesSection = oAppData[this.ServerModuleName]
+			oAppDataOpenPgpFilesSection = oAppData[this.ServerModuleName],
+			oAppDataCoreSection = oAppData['Core']
 		;
 
 		if (!_.isEmpty(oAppDataOpenPgpFilesSection))
 		{
 			this.PublicFileData = Types.pObject(oAppDataOpenPgpFilesSection.PublicFileData, this.PublicFileData);
+		}
+		if (!_.isEmpty(oAppDataCoreSection))
+		{
+			this.ProductName = Types.pString(oAppDataCoreSection.ProductName, this.ProductName);
 		}
 	}
 };
