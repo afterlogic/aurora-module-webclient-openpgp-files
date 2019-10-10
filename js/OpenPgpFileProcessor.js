@@ -15,6 +15,7 @@ let
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	AlertPopup = require('%PathToCoreWebclientModule%/js/popups/AlertPopup.js'),
 	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js'),
+	ConfirmPopup = require('%PathToCoreWebclientModule%/js/popups/ConfirmPopup.js'),
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
 ;
 
@@ -131,32 +132,44 @@ OpenPgpFileProcessor.prototype.encryptFile = async function ()
 	};
 	let oPromiseEncryptFile = new Promise(async (resolve, reject) => {
 		const fResolveCallback = async (recipientEmail, isPasswordMode) => {
-			let oBlob = await this.downloadFile();
-			if (oBlob instanceof Blob)
+			const sNewFileName = this.getGPGFileName(this.oFile.fileName(), recipientEmail);
+			const bIsGPGFileAlreadyExists = !!this.oFilesView.filesCollection().find(oFile => {
+				return oFile.displayName() === sNewFileName;
+			});
+			let bIsReplaceExistingFile = false;
+			if (bIsGPGFileAlreadyExists)
 			{
-				//file encryption
-				let oEncryptionResult = await OpenPgpEncryptor.encryptData(
-					oBlob,
-					recipientEmail,
-					isPasswordMode
-				);
-				if (!oEncryptionResult.result)
+				bIsReplaceExistingFile = await this.isReplaceExistingFile(sNewFileName, recipientEmail);
+			}
+			if (!bIsGPGFileAlreadyExists || bIsReplaceExistingFile)
+			{
+				let oBlob = await this.downloadFile();
+				if (oBlob instanceof Blob)
 				{
-					ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
-				}
-				else
-				{
-					let {data, password} = oEncryptionResult.result;
-					let oResBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
-					let oResult = {
-						result: true,
-						blob: oResBlob,
-						password: password,
-						recipientEmail: recipientEmail
-					};
-					resolve(oResult);
+					//file encryption
+					let oEncryptionResult = await OpenPgpEncryptor.encryptData(
+						oBlob,
+						recipientEmail,
+						isPasswordMode
+					);
+					if (!oEncryptionResult.result)
+					{
+						ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
+					}
+					else
+					{
+						let {data, password} = oEncryptionResult.result;
+						let oResBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
+						let oResult = {
+							result: true,
+							blob: oResBlob,
+							password: password,
+							recipientEmail: recipientEmail
+						};
+						resolve(oResult);
 
-					return false;
+						return false;
+					}
 				}
 			}
 
@@ -411,6 +424,32 @@ OpenPgpFileProcessor.prototype.getFileNameForDownload = function (sFileName, sRe
 	}
 
 	return sNewName;
+};
+
+OpenPgpFileProcessor.prototype.isReplaceExistingFile = async function (sFileName, sRecipientEmail)
+{
+	let bResult = false;
+	let oPromiseIsReplaceExistingFile = new Promise(async (resolve, reject) => {
+		const fCallback = bOk => {
+			if (bOk)
+			{
+				resolve(true);
+			}
+			else
+			{
+				resolve(false);
+			}
+		};
+		//showing popup
+		Popups.showPopup(ConfirmPopup, [
+			TextUtils.i18n('%MODULENAME%/MESSAGE_FILE_IS_ALREADY_SHARED', {'EMAIL': sRecipientEmail}),
+			fCallback
+		]);
+	});
+
+	bResult = await oPromiseIsReplaceExistingFile;
+
+	return bResult;
 };
 
 module.exports = new OpenPgpFileProcessor();
