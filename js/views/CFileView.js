@@ -5,6 +5,7 @@ let
 	ko = require('knockout'),
 
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js'),
 
 	CAbstractScreenView = require('%PathToCoreWebclientModule%/js/views/CAbstractScreenView.js'),
@@ -59,9 +60,16 @@ CFileView.prototype.onShow = async function ()
 
 CFileView.prototype.downloadAndDecryptFile = async function ()
 {
-	this.isDownloadingAndDecrypting(true);
-	await OpenPgpFileProcessor.processFileDecryption(this.fileName, this.fileUrl, this.recipientEmail, this.password(), this.encryptionMode);
-	this.isDownloadingAndDecrypting(false);
+	if (this.encryptionMode === Enums.EncryptionBasedOn.Password && this.password() === '')
+	{
+		Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_EMPTY_PASSWORD'));
+	}
+	else
+	{
+		this.isDownloadingAndDecrypting(true);
+		await OpenPgpFileProcessor.processFileDecryption(this.fileName, this.fileUrl, this.recipientEmail, this.password(), this.encryptionMode);
+		this.isDownloadingAndDecrypting(false);
+	}
 };
 
 module.exports = CFileView;

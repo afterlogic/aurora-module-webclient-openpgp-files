@@ -74,10 +74,6 @@ function EncryptFilePopup()
 			this.recipientHintText(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
 		}
 	}, this);
-	this.publicKeys = ko.computed(() => {
-		let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
-		return aPublicKeys.map(oKey => oKey.getEmail());
-	}, this);
 }
 
 _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
@@ -135,7 +131,7 @@ EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 		['all', App.getUserPublicId(), /*bWithGroups*/ false]
 	);
 	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
-		let aPublicKeys = this.publicKeys();
+		let aPublicKeys = this.getPublicKeys();
 		let iOwnPublicKeyIndex = aPublicKeys.indexOf(App.getUserPublicId());
 		if (iOwnPublicKeyIndex > -1)
 		{//remove own public key from list
@@ -155,19 +151,23 @@ EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 			}
 		});
 		aPublicKeys.forEach(sPublicKey => {
-			aRecipienstList.push(
-				{
-					label: sPublicKey,
-					value: sPublicKey,
-					name: sPublicKey,
-					email: sPublicKey,
-					frequency: 0,
-					id: 0,
-					team: false,
-					sharedToAll: false,
-					hasKey: true
-				}
-			);
+			let aKeys = OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey);
+			if (aKeys && aKeys[0])
+			{
+				aRecipienstList.push(
+					{
+						label: aKeys[0].getUser(),
+						value: aKeys[0].getUser(),
+						name: aKeys[0].getUser(),
+						email: aKeys[0].getEmail(),
+						frequency: 0,
+						id: 0,
+						team: false,
+						sharedToAll: false,
+						hasKey: true
+					}
+				);
+			}
 		});
 		fResponse(aRecipienstList);
 	};
@@ -192,7 +192,7 @@ EncryptFilePopup.prototype.showResults = function (oData)
 			}
 			else
 			{
-				const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().emaill;
+				const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().email;
 				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_EMAIL', {'USER': sUserName}));
 			}
 		}
@@ -267,6 +267,13 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 		this.clearPopup();
 		this.closePopup();
 	}
+};
+
+EncryptFilePopup.prototype.getPublicKeys = function ()
+{
+	let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
+
+	return aPublicKeys.map(oKey => oKey.getEmail());
 };
 
 module.exports = new EncryptFilePopup();
