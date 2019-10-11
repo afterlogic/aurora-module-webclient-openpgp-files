@@ -94,10 +94,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($aData['UserId']);
 			if ($oUser)
 			{
-				\Aurora\System\Api::setUserId($oUser->EntityId);
+				$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 				$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name']);
+				\Aurora\System\Api::skipCheckUserRole($bPrevState);
 				$oApiIntegrator = \Aurora\System\Managers\Integrator::getInstance();
-
 				if ($oApiIntegrator && $aFileInfo && isset($aFileInfo->ExtendedProps) && isset($aFileInfo->ExtendedProps['PgpEncryptionMode']))
 				{
 					$oCoreClientModule = \Aurora\System\Api::GetModule('CoreWebclient');
