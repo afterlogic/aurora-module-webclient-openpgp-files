@@ -24,6 +24,7 @@ Enums.OpenPgpErrors = {
 	'DecryptError': 43,
 	'SignAndEncryptError': 44,
 	'VerifyAndDecryptError': 45,
+	'PasswordDecryptError': 46,
 	'CanNotReadMessage': 50,
 	'CanNotReadKey': 51,
 	'DeleteError': 60,

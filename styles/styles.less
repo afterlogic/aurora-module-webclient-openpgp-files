@@ -44,39 +44,51 @@
 	padding: 130px 20px 20px;
 	text-align: center;
 	color: #555;
-}
-.sharing_panel .item {
-	display: inline-block;
-	padding: 20px 6px;
-	text-align: left;
-	vertical-align: top;
-	
-	-webkit-box-sizing: border-box;
-	-moz-box-sizing: border-box;
-	box-sizing: border-box;
-}
-.sharing_panel .file .icon {
-	background-position: 0px -400px;
-	height: 64px;
-	width: 64px;
-}
-.sharing_panel .item .icon {
-	display: inline-block;
-	float: left;
-	width: 70px;
-	width: 55px;
-	height: 65px;
-	margin-right: 10px;
-}
-.sharing_panel .item .size {
-	color: #888888;
-	display: block;
-	font-size: 80%;
-}
-.sharing_panel .fields .input {
-	width: auto;
+
+	.item {
+		display: inline-block;
+		padding: 20px 6px;
+		text-align: left;
+		vertical-align: top;
+
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		box-sizing: border-box;
+
+		.icon {
+			display: inline-block;
+			float: left;
+			width: 70px;
+			width: 55px;
+			height: 65px;
+			margin-right: 10px;
+			background-position: 0px -400px;
+		}
+
+		.size {
+			color: #888888;
+			display: block;
+			font-size: 80%;
+		}
+
+		.name {
+			word-break: break-all;
+		}
+	}
+
+	.fields .input {
+		width: auto;
+	}
+
+	.buttons {
+		white-space: nowrap;
+	}
 }
 
 .pgp-encrypt-radio {
-	margin-left: 18px;
+	margin-left: 30px;
+}
+
+.encrypt-popup {
+	max-width: 500px;
 }

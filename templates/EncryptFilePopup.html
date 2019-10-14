@@ -5,7 +5,7 @@
 		<div class="row">
 			<span class="popup_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE'}"></span>
 		</div>
-		<div class="fields">
+		<div class="fields encrypt-popup">
 			<div class="fieldset">
 				<div class="row">
 					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_RECIPIENT'}"></span>
@@ -20,6 +20,7 @@
 						<br>
 						<span class="hint" data-bind="text: recipientHintText"></span>
 					</div>
+					<br>
 					<div class="row">
 						<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPTION_TYPE'}"></span>
 						<span class="value">
@@ -36,9 +37,9 @@
 							<label for="tab_password" data-bind="i18n: {'key': '%MODULENAME%/LABEL_PASSWORD_BASED_ENCRYPTION'}, css: {'hint': passwordBasedEncryptionDisabled}"></label>
 						</span>
 					</div>
-					<div class="row">
-						<span class="hint" data-bind="i18n: {'key': '%MODULENAME%/HINT_KEY_BASED_ENCRYPTION'},
-							style: {'visibility': (encryptionBasedMode() === Enums.EncryptionBasedOn.Key) ? 'visible' : 'hidden'}"></span>
+					<br>
+					<div class="row" data-bind="style: {'visibility': (encryptionBasedMode() !== '') ? 'visible' : 'hidden'}">
+						<span class="hint" data-bind="text: encryptionBasedMode() === '' ? '&nbsp;' : encryptionModeHintText()"></span>
 					</div>
 				</div>
 				<div data-bind="visible: isSuccessfullyEncryptedAndUploaded()">

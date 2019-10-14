@@ -78,6 +78,9 @@ ErrorsUtils.showPgpErrorByCode = function (oRes, sPgpAction, sDefaultError)
 				case Enums.OpenPgpErrors.DecryptError:
 					sError = TextUtils.i18n('%MODULENAME%/ERROR_DECRYPT');
 					break;
+				case Enums.OpenPgpErrors.PasswordDecryptError:
+					sError = TextUtils.i18n('%MODULENAME%/ERROR_PASSWORD_DECRYPT');
+					break;
 				case Enums.OpenPgpErrors.SignAndEncryptError:
 					sError = TextUtils.i18n('%MODULENAME%/ERROR_ENCRYPT_OR_SIGN');
 					break;

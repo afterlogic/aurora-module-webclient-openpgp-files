@@ -448,7 +448,14 @@ OpenPgpEncryptor.prototype.decryptData = async function (oBlob, sAccountEmail, s
 		}
 		catch (e)
 		{
-			oResult.addExceptionMessage(e, Enums.OpenPgpErrors.DecryptError);
+			if (bPasswordBasedEncryption)
+			{
+				oResult.addExceptionMessage(e, Enums.OpenPgpErrors.PasswordDecryptError);
+			}
+			else
+			{
+				oResult.addExceptionMessage(e, Enums.OpenPgpErrors.DecryptError);
+			}
 		}
 	}
 

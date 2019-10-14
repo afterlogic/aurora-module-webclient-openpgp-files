@@ -31,6 +31,7 @@ function EncryptFilePopup()
 	this.keys = ko.observableArray([]);
 	this.encryptionBasedMode = ko.observable('');
 	this.recipientHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
+	this.encryptionModeHintText = ko.observable('');
 	this.isEncrypting = ko.observable(false);
 	this.encryptedFileLink = ko.observable('');
 	this.encryptedFilePassword = ko.observable('');
@@ -74,6 +75,19 @@ function EncryptFilePopup()
 			this.recipientHintText(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
 		}
 	}, this);
+	this.encryptionBasedMode.subscribe(oItem => {
+		switch (oItem)
+		{
+			case Enums.EncryptionBasedOn.Password:
+				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_PASSWORD_BASED_ENCRYPTION'));
+				break;
+			case Enums.EncryptionBasedOn.Key:
+				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_KEY_BASED_ENCRYPTION'));
+				break;
+			default:
+				this.encryptionModeHintText('');
+		}
+	})
 }
 
 _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
