@@ -14,7 +14,6 @@ let
 
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	AlertPopup = require('%PathToCoreWebclientModule%/js/popups/AlertPopup.js'),
-	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js'),
 	ConfirmPopup = require('%PathToCoreWebclientModule%/js/popups/ConfirmPopup.js'),
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
 ;
@@ -30,41 +29,71 @@ function OpenPgpFileProcessor()
 	this.sPath = null;
 }
 
-OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView)
+OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode)
 {
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
 	this.sPath = oFilesView.currentPath();
 	this.sStorageType = oFilesView.storageType();
 	let oResultData = {result: false};
-	let oEncryptionResult = await this.encryptFile();
-	if (oEncryptionResult && oEncryptionResult.result)
+	const sNewFileName = this.getGPGFileName(this.oFile.fileName(), sRecipientEmail);
+	//check if a file with the same name already exists
+	const bIsGPGFileAlreadyExists = !!this.oFilesView.filesCollection().find(oFile => {
+		return oFile.displayName() === sNewFileName;
+	});
+	let bIsReplaceExistingFile = false;
+	if (bIsGPGFileAlreadyExists)
 	{
-		//add gpg extension to encrypted file
-		const sNewFileName = this.getGPGFileName(this.oFile.fileName(), oEncryptionResult.recipientEmail);
-		let bUploadResult = await this.uploadFile(oEncryptionResult.blob, sNewFileName, oEncryptionResult);
-		if (bUploadResult)
+		//propose the user to replace the existing file with a new one
+		bIsReplaceExistingFile = await this.isReplaceExistingFile(sNewFileName, sRecipientEmail);
+	}
+	if (!bIsGPGFileAlreadyExists || bIsReplaceExistingFile)
+	{
+		const oBlob = await this.downloadFile();
+		if (oBlob instanceof Blob)
+		{
+			//file encryption
+			const oEncryptionResult = await OpenPgpEncryptor.encryptData(
+				oBlob,
+				sRecipientEmail,
+				bIsPasswordMode
+			);
+			if (!oEncryptionResult.result)
 			{
-				let sPublicLink = await this.createPublicLink(
-					this.oFile.storageType(),
-					this.oFile.path(),
-					sNewFileName,
-					oEncryptionResult.blob.size
-				);
-				if (sPublicLink)
-				{
-					this.oFilesView.refresh();
-					oResultData.result = true;
-					oResultData.password = oEncryptionResult.password;
-					oResultData.link = sPublicLink;
+				ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
+			}
+			else
+			{
+				let {data, password} = oEncryptionResult.result;
+				let oEncryptedBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
+				//uploading of encrypted file
+				let bUploadResult = await this.uploadFile(oEncryptedBlob, sNewFileName, sRecipientEmail, password);
+				if (bUploadResult)
+				{//creating a public link
+					let sPublicLink = await this.createPublicLink(
+						this.oFile.storageType(),
+						this.oFile.path(),
+						sNewFileName,
+						oEncryptedBlob.size
+					);
+					if (sPublicLink)
+					{
+						this.oFilesView.refresh();
+						oResultData.result = true;
+						oResultData.password = password;
+						oResultData.link = sPublicLink;
+					}
 				}
 			}
+		}
 	}
-	EncryptFilePopup.showResults(oResultData);
+
 	this.oFile = null;
 	this.oFilesView = null;
 	this.sStorageType = null;
 	this.sPath = null;
+
+	return oResultData;
 };
 
 OpenPgpFileProcessor.prototype.downloadFile = async function ()
@@ -125,76 +154,6 @@ OpenPgpFileProcessor.prototype.downloadFile = async function ()
 	return oBlob;
 };
 
-OpenPgpFileProcessor.prototype.encryptFile = async function ()
-{
-	let oResult = {
-		result: false
-	};
-	let oPromiseEncryptFile = new Promise(async (resolve, reject) => {
-		const fResolveCallback = async (recipientEmail, isPasswordMode) => {
-			const sNewFileName = this.getGPGFileName(this.oFile.fileName(), recipientEmail);
-			const bIsGPGFileAlreadyExists = !!this.oFilesView.filesCollection().find(oFile => {
-				return oFile.displayName() === sNewFileName;
-			});
-			let bIsReplaceExistingFile = false;
-			if (bIsGPGFileAlreadyExists)
-			{
-				bIsReplaceExistingFile = await this.isReplaceExistingFile(sNewFileName, recipientEmail);
-			}
-			if (!bIsGPGFileAlreadyExists || bIsReplaceExistingFile)
-			{
-				let oBlob = await this.downloadFile();
-				if (oBlob instanceof Blob)
-				{
-					//file encryption
-					let oEncryptionResult = await OpenPgpEncryptor.encryptData(
-						oBlob,
-						recipientEmail,
-						isPasswordMode
-					);
-					if (!oEncryptionResult.result)
-					{
-						ErrorsUtils.showPgpErrorByCode(oEncryptionResult, Enums.PgpAction.Encrypt);
-					}
-					else
-					{
-						let {data, password} = oEncryptionResult.result;
-						let oResBlob = new Blob([data], {type: "octet/stream", lastModified: new Date()});
-						let oResult = {
-							result: true,
-							blob: oResBlob,
-							password: password,
-							recipientEmail: recipientEmail
-						};
-						resolve(oResult);
-
-						return false;
-					}
-				}
-			}
-
-			return true;
-		};
-		const fRejectCallback = () => {
-			reject(false);
-		};
-		//showing popup to select recipient and encryption mode
-		Popups.showPopup(EncryptFilePopup, [
-			fResolveCallback,
-			fRejectCallback
-		]);
-	});
-
-	try
-	{
-		oResult = await oPromiseEncryptFile;
-	}
-	catch (oError)
-	{}
-
-	return oResult;
-};
-
 OpenPgpFileProcessor.prototype.decryptFile = async function (oBlob, sRecipientEmail, sPassword, bPasswordBasedEncryption)
 {
 	let oResult = {
@@ -239,17 +198,16 @@ OpenPgpFileProcessor.prototype.getGPGFileName = function (sFileName, sRecipientE
 	return sFileNameWoExt + '_' + sRecipientEmail + '.' + sFileNameExt + '.gpg';
 };
 
-OpenPgpFileProcessor.prototype.uploadFile = async function (oBlob, sNewFileName, oEncryptionResult)
+OpenPgpFileProcessor.prototype.uploadFile = async function (oBlob, sNewFileName, sRecipientEmail, sPassword)
 {
 	let oFormData = new FormData();
-	let {password, recipientEmail} = oEncryptionResult;
 	let oParameters = {
 		Type:			this.sStorageType,
 		Path:			this.sPath,
 		SubPath:		'',
 		ExtendedProps:	{
-			PgpEncryptionMode: password ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key,
-			PgpEncryptionRecipientEmail: recipientEmail
+			PgpEncryptionMode: sPassword ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key,
+			PgpEncryptionRecipientEmail: sRecipientEmail
 		}
 	};
 	oFormData.append('uploader', oBlob, sNewFileName);

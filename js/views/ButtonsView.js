@@ -3,7 +3,8 @@
 let
 	CFileModel = require('modules/FilesWebclient/js/models/CFileModel.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
-	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js')
+	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
+	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js')
 ;
 
 /**
@@ -21,7 +22,10 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
-			OpenPgpFileProcessor.processFileEncryption(selectedItem(), oFilesView);
+			Popups.showPopup(EncryptFilePopup, [
+				selectedItem(),
+				oFilesView
+			]);
 		},
 		() => {//button is active only when one file is selected
 			return selectedItem() !== null

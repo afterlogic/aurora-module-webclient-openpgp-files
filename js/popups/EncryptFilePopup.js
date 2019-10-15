@@ -9,6 +9,7 @@ let
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
+	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
@@ -19,9 +20,8 @@ function EncryptFilePopup()
 {
 	CAbstractPopup.call(this);
 
-	this.sPassword = ko.observable('');
-	this.fOnKeyOrPasswordSelectedCallback = null;
-	this.fOnCancellCallback = null;
+	this.oFile = null;
+	this.oFilesView = null;
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.recipientAutocomplete = ko.observable('');
 	this.keyBasedEncryptionDisabled = ko.observable(true);
@@ -94,26 +94,24 @@ _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
 
 EncryptFilePopup.prototype.PopupTemplate = '%ModuleName%_EncryptFilePopup';
 
-EncryptFilePopup.prototype.onOpen = async function (fOnKeyOrPasswordSelectedCallback, fOnCancellCallback)
+EncryptFilePopup.prototype.onOpen = async function (oFile, oFilesView)
 {
-	this.fOnKeyOrPasswordSelectedCallback = fOnKeyOrPasswordSelectedCallback;
-	this.fOnCancellCallback = fOnCancellCallback;
+	this.oFile = oFile;
+	this.oFilesView = oFilesView;
 	await OpenPgpEncryptor.initKeys();
 	this.keys(OpenPgpEncryptor.getKeys());
 };
 
 EncryptFilePopup.prototype.cancelPopup = function ()
 {
-	if (_.isFunction(this.fOnCancellCallback))
-	{
-		this.fOnCancellCallback();
-	}
 	this.clearPopup();
 	this.closePopup();
 };
 
 EncryptFilePopup.prototype.clearPopup = function ()
 {
+	this.oFile = null;
+	this.oFilesView = null;
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
 	this.isSuccessfullyEncryptedAndUploaded(false);
@@ -124,14 +122,14 @@ EncryptFilePopup.prototype.clearPopup = function ()
 EncryptFilePopup.prototype.encrypt = async function ()
 {
 	this.isEncrypting(true);
-	if (_.isFunction(this.fOnKeyOrPasswordSelectedCallback))
-	{
-		let bResult = await this.fOnKeyOrPasswordSelectedCallback(this.recipientAutocompleteItem().email, this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password);
-		if (bResult)
-		{
-			this.isEncrypting(false);
-		}
-	}
+	let oResult = await OpenPgpFileProcessor.processFileEncryption(
+		this.oFile,
+		this.oFilesView,
+		this.recipientAutocompleteItem().email,
+		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password
+	);
+	this.isEncrypting(false);
+	this.showResults(oResult);
 };
 
 /**
