@@ -219,7 +219,8 @@ OpenPgpFileProcessor.prototype.uploadFile = async function (oBlob, sNewFileName,
 		{
 			method: 'POST',
 			headers: {
-				'Authorization': 'Bearer ' + $.cookie('AuthToken')
+				'Authorization': 'Bearer ' + $.cookie('AuthToken'),
+				'x-client': 'WebClient'
 			},
 			body: oFormData
 		}
