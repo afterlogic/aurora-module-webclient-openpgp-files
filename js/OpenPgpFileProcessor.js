@@ -70,18 +70,18 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 				let bUploadResult = await this.uploadFile(oEncryptedBlob, sNewFileName, sRecipientEmail, password);
 				if (bUploadResult)
 				{//creating a public link
-					let sPublicLink = await this.createPublicLink(
+					let oPublicLinkResult = await this.createPublicLink(
 						this.oFile.storageType(),
 						this.oFile.path(),
 						sNewFileName,
 						oEncryptedBlob.size
 					);
-					if (sPublicLink)
+					if (oPublicLinkResult.result)
 					{
 						this.oFilesView.refresh();
 						oResultData.result = true;
 						oResultData.password = password;
-						oResultData.link = sPublicLink;
+						oResultData.link = oPublicLinkResult.link;
 					}
 				}
 			}
@@ -256,27 +256,32 @@ OpenPgpFileProcessor.prototype.uploadFile = async function (oBlob, sNewFileName,
 	return false;
 };
 
-OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, sNewFileName, iSize)
+OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, sFileName, iSize, bEncryptLink = false)
 {
 	let sLink = '';
-	let oPromiseCreatePublicLink = new Promise( (resolve, reject) => {
+	let oResult = {result: false};
+	const sPassword = bEncryptLink ? OpenPgpEncryptor.generatePassword() : '';
+	const oPromiseCreatePublicLink = new Promise( (resolve, reject) => {
 		const fResponseCallback = (oResponse, oRequest) => {
-			if (oResponse.Result)
+			if (oResponse.Result && oResponse.Result.link)
 			{
-				resolve(UrlUtils.getAppPath() + oResponse.Result);
+				resolve(oResponse.Result.link);
 			}
 			reject(new Error(TextUtils.i18n('%MODULENAME%/ERROR_PUBLIC_LINK_CREATION')));
 		};
+		let oParams = {
+			'Type': sType,
+			'Path': sPath,
+			'Name': sFileName,
+			'Size': iSize,
+			'IsFolder': false,
+			'Password': sPassword
+		};
+
 		Ajax.send(
-			'Files',
+			'OpenPgpFilesWebclient',
 			'CreatePublicLink',
-			{
-				'Type': sType,
-				'Path': sPath,
-				'Name': sNewFileName,
-				'Size': iSize,
-				'IsFolder': false
-			}, 
+			oParams, 
 			fResponseCallback,
 			this
 		);
@@ -284,6 +289,9 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 	try
 	{
 		sLink = await oPromiseCreatePublicLink;
+		oResult.result = true;
+		oResult.link = sLink;
+		oResult.password = sPassword;
 	}
 	catch (oError)
 	{
@@ -291,11 +299,9 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 		{
 			Screens.showError(oError.message);
 		}
-
-		return false;
 	}
 
-	return sLink;
+	return oResult;
 };
 
 OpenPgpFileProcessor.prototype.getFileContentByUrl = async function (sDownloadUrl, onDownloadProgressCallback)

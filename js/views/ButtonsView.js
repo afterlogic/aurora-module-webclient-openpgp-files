@@ -4,7 +4,9 @@ let
 	CFileModel = require('modules/FilesWebclient/js/models/CFileModel.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
-	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js')
+	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js'),
+	SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
+	CreatePublicLinkPopup =  require('modules/%ModuleName%/js/popups/CreatePublicLinkPopup.js')
 ;
 
 /**
@@ -22,10 +24,27 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
-			Popups.showPopup(EncryptFilePopup, [
-				selectedItem(),
-				oFilesView
-			]);
+			if (oFilesView.storageType() === Enums.FileStorageType.Encrypted)
+			{
+				Popups.showPopup(EncryptFilePopup, [
+					selectedItem(),
+					oFilesView
+				]);
+			}
+			else if (oFilesView.storageType() === Enums.FileStorageType.Personal)
+			{
+				if (selectedItem().published())
+				{
+					Popups.showPopup(SharePopup, [selectedItem()]);
+				}
+				else
+				{
+					Popups.showPopup(CreatePublicLinkPopup, [
+						selectedItem(),
+						oFilesView
+					]);
+				}
+			}
 		},
 		() => {//button is active only when one file is selected
 			return selectedItem() !== null

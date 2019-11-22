@@ -1,0 +1,31 @@
+<div class="popup" style="display: none;">
+	<div class="mask" data-bind="click: cancelPopup"></div>
+	<div class="popup_panel">
+		<span class="close" data-bind="click: cancelPopup"></span>
+		<div class="row">
+			<span class="popup_heading" data-bind="i18n: {'key': '%MODULENAME%/HEADING_CREATE_PUBLIC_LINK'}"></span>
+		</div>
+		<div class="fields encrypt-popup">
+			<div class="fieldset">
+				<div class="row">
+					<span>
+						<label class="custom_checkbox" data-bind="css: {checked: encryptPublicLink}">
+							<span class="icon"></span>
+							<input type="checkbox" id="EncryptPublicLink" data-bind="checked: encryptPublicLink" />
+						</label>
+						<label for="EncryptPublicLink" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPT_PUBLIC_LINK'}"></label>
+					</span>
+				</div>
+			</div>
+			<div class="buttons">
+				<span class="button" data-bind="click: isCreatingPublicLink() ? false : createPublicLink, css: {'disabled': isCreatingPublicLink()}">
+					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_CREATE_PUBLIC_LINK'}, visible: !(encryptPublicLink() || isCreatingPublicLink())"></span>
+					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_CREATE_ENCRYPTED_PUBLIC_LINK'}, visible: encryptPublicLink() && !isCreatingPublicLink()"></span>
+					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_CREATE_PUBLIC_LINK_IN_PROGRESS'}, visible: isCreatingPublicLink()"></span>
+				</span>
+				<span class="button secondary_button" data-bind="i18n: {'key': 'COREWEBCLIENT/ACTION_CANCEL'}, click: cancelPopup"></span>
+			</div>
+		</div>
+	</div>
+	<span class="helper"></span>
+</div>

@@ -11,6 +11,8 @@ module.exports =  oAppData => {
 	let
 		App = require('%PathToCoreWebclientModule%/js/App.js'),
 		Settings = require('modules/%ModuleName%/js/Settings.js'),
+		Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
+		SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
 		oButtonsView = null
 	;
 
@@ -45,6 +47,14 @@ module.exports =  oAppData => {
 				if (IsPgpSupported())
 				{
 					ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
+					App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
+						oParams.View.onShareIconClick = oItem => {
+							if (oItem)
+							{
+								Popups.showPopup(SharePopup, [oItem]);
+							}
+						}
+					});
 				}
 			}
 		};

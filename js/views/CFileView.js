@@ -21,7 +21,7 @@ function CFileView()
 	CAbstractScreenView.call(this, '%ModuleName%');
 
 	this.password = ko.observable('');
-	this.isDecryptionAvailable = ko.observable(true);
+	this.isDecryptionAvailable = ko.observable(false);
 	this.isDownloadingAndDecrypting = ko.observable(false);
 	this.browserTitle = ko.observable(TextUtils.i18n('%MODULENAME%/HEADING_BROWSER_TAB'));
 	this.fileName = Settings.PublicFileData.Name ? Settings.PublicFileData.Name : '';
@@ -29,18 +29,27 @@ function CFileView()
 	this.fileUrl = Settings.PublicFileData.Url ? Settings.PublicFileData.Url : '';
 	this.encryptionMode = Settings.PublicFileData.PgpEncryptionMode ? Settings.PublicFileData.PgpEncryptionMode : '';
 	this.recipientEmail = Settings.PublicFileData.PgpEncryptionRecipientEmail ? Settings.PublicFileData.PgpEncryptionRecipientEmail : '';
-	switch (this.encryptionMode)
+	this.bSecuredLink = !!Settings.PublicFileData.IsSecuredLink;
+	if (this.bSecuredLink)
 	{
-		case Enums.EncryptionBasedOn.Key:
-			this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSPHRASE', {'KEY': this.recipientEmail});
-			break;
-		case Enums.EncryptionBasedOn.Password:
-			this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSWORD');
-			break;
-		default:
-			//Encryption mode not defined
-			this.passwordLabel = "";
-			this.isDecryptionAvailable(false);
+		this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSWORD');
+	}
+	else
+	{
+		switch (this.encryptionMode)
+		{
+			case Enums.EncryptionBasedOn.Key:
+				this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSPHRASE', {'KEY': this.recipientEmail});
+				this.isDecryptionAvailable(true);
+				break;
+			case Enums.EncryptionBasedOn.Password:
+				this.passwordLabel = TextUtils.i18n('%MODULENAME%/LABEL_ENTER_PASSWORD');
+				this.isDecryptionAvailable(true);
+				break;
+			default:
+				//Encryption mode not defined
+				this.passwordLabel = "";
+		}
 	}
 }
 
@@ -69,6 +78,18 @@ CFileView.prototype.downloadAndDecryptFile = async function ()
 		this.isDownloadingAndDecrypting(true);
 		await OpenPgpFileProcessor.processFileDecryption(this.fileName, this.fileUrl, this.recipientEmail, this.password(), this.encryptionMode);
 		this.isDownloadingAndDecrypting(false);
+	}
+};
+
+CFileView.prototype.securedLinkDownload = function ()
+{
+	if (this.password() === '')
+	{
+		Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_EMPTY_PASSWORD'));
+	}
+	else
+	{
+		window.location.href = this.fileUrl + '/secure/' + this.password();
 	}
 };
 
