@@ -102,11 +102,15 @@ OpenPgpFileProcessor.prototype.downloadFile = async function ()
 		const fResultCallback = (oBlob) => {
 			resolve(oBlob);
 		};
+		const fErrorCallback = () => {
+			reject(false);
+		};
 		if (this.oFile.bIsSecure())
 		{//download file encrypted with other modules
 			App.broadcastEvent('OpenPgpFilesWebclient::DownloadSecureFile', {
 				File: this.oFile,
-				fProcessBlobCallback: fResultCallback
+				fProcessBlobCallback: fResultCallback,
+				fProcessBlobErrorCallback: fErrorCallback
 			});
 		}
 		else
