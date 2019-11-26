@@ -13,6 +13,7 @@ module.exports =  oAppData => {
 		Settings = require('modules/%ModuleName%/js/Settings.js'),
 		Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 		SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
+		CFileModel = require('modules/FilesWebclient/js/models/CFileModel.js'),
 		oButtonsView = null
 	;
 
@@ -48,10 +49,16 @@ module.exports =  oAppData => {
 				{
 					ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
 					App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
+						const fParentHandler = oParams.View.onShareIconClick;
 						oParams.View.onShareIconClick = oItem => {
-							if (oItem)
+							if (oItem && oItem instanceof CFileModel
+								&& oParams.View.storageType() === Enums.FileStorageType.Personal)
 							{
 								Popups.showPopup(SharePopup, [oItem]);
+							}
+							else
+							{
+								fParentHandler(oItem);
 							}
 						}
 					});

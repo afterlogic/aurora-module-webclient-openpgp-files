@@ -115,7 +115,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				}
 				$sHash = $oMin->createMin(
 					$sID,
-					$aProps
+					$aProps,
+					$oUser->EntityId
 				);
 				$mMin = $oMin->GetMinByHash($sHash);
 				if (!empty($mMin['__hash__']))
