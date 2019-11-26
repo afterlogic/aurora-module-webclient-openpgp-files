@@ -7,6 +7,7 @@ let
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
+	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
@@ -214,7 +215,7 @@ EncryptFilePopup.prototype.showResults = function (oData)
 			this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_EMAIL'));
 		}
 		this.isSuccessfullyEncryptedAndUploaded(true);
-		this.encryptedFileLink(link);
+		this.encryptedFileLink(UrlUtils.getAppPath() + link);
 		this.encryptedFilePassword(password);
 	}
 	this.isEncrypting(false);
