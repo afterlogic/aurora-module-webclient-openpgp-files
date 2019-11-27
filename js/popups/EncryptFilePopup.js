@@ -223,7 +223,7 @@ EncryptFilePopup.prototype.showResults = function (oData)
 
 EncryptFilePopup.prototype.sendEmail = async function ()
 {
-	const sSubject = TextUtils.i18n('%MODULENAME%/MESSAGE_SUBJECT');
+	const sSubject = TextUtils.i18n('%MODULENAME%/MESSAGE_SUBJECT', {'FILENAME': this.oFile.fileName()});
 
 	if (this.recipientAutocompleteItem().hasKey)
 	{//message is encrypted
