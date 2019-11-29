@@ -89,7 +89,7 @@ CFileView.prototype.securedLinkDownload = function ()
 	}
 	else
 	{
-		window.location.href = this.fileUrl + '/secure/' + this.password();
+		window.location.href = this.fileUrl + '/download/secure/' + encodeURIComponent(this.password());
 	}
 };
 
