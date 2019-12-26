@@ -4,9 +4,9 @@ let
 	_ = require('underscore'),
 	$ = require('jquery'),
 	ko = require('knockout'),
-	
+
 	Types = require('%PathToCoreWebclientModule%/js/utils/Types.js'),
-	
+
 	App = require('%PathToCoreWebclientModule%/js/App.js'),
 	openpgp = require('%PathToCoreWebclientModule%/js/vendors/openpgp.js'),
 	COpenPgpKey = require('modules/%ModuleName%/js/COpenPgpKey.js'),
@@ -226,7 +226,7 @@ OpenPgpEncryptor.prototype.getArmorInfo = async function (sArmor)
 				{
 					aResult.push(new COpenPgpKey(oKey.keys[0]));
 				}
-				
+
 				iCount++;
 			}
 			catch (e)
@@ -265,14 +265,14 @@ OpenPgpEncryptor.prototype.findKeyByID = function (sID, bPublic)
 {
 	bPublic = !!bPublic;
 	sID = sID.toLowerCase();
-	
+
 	let oKey = _.find(this.keys(), oKey => {
-		
+
 		let
 			oResult = false,
 			aKeys = null
 		;
-		
+
 		if (oKey && bPublic === oKey.isPublic())
 		{
 			aKeys = oKey.pgpKey.getKeyIds();
@@ -283,7 +283,7 @@ OpenPgpEncryptor.prototype.findKeyByID = function (sID, bPublic)
 				});
 			}
 		}
-		
+
 		return !!oResult;
 	});
 
@@ -517,11 +517,21 @@ OpenPgpEncryptor.prototype.encryptMessage = async function (sMessage, sPrincipal
 OpenPgpEncryptor.prototype.generatePassword = function ()
 {
 	let sPassword = "";
-	const sSymbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!;%:?*()_+=";
 
-	for (let i = 0; i < this.iPasswordLength; i++)
+	if (window.crypto)
 	{
-		sPassword += sSymbols.charAt(Math.floor(Math.random() * sSymbols.length));     
+		let password = window.crypto.getRandomValues(new Uint8Array(10));
+		sPassword = btoa(String.fromCharCode.apply(null, password));
+		sPassword = sPassword.replace(/[^A-Za-z0-9]/g, "");
+	}
+	else
+	{
+		const sSymbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!;%:?*()_+=";
+
+		for (let i = 0; i < this.iPasswordLength; i++)
+		{
+			sPassword += sSymbols.charAt(Math.floor(Math.random() * sSymbols.length));     
+		}
 	}
 
 	return sPassword;
