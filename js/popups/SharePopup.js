@@ -11,7 +11,8 @@ var
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
+	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
+	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js')
 ;
 
 /**
@@ -31,6 +32,10 @@ function SharePopup()
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.isEmailEncryptionAvailable = ko.observable(false);
 	this.sendLinkHintText = ko.observable('');
+	this.sign = ko.observable(false);
+	this.passphrase = ko.observable('');
+	this.isPrivateKeyAvailable = ko.observable(false);
+	this.isSigningAvailable = ko.observable(false);
 	this.recipientAutocompleteItem.subscribe( oItem => {
 		if (oItem)
 		{
@@ -42,6 +47,11 @@ function SharePopup()
 				{
 					sHint = TextUtils.i18n('%MODULENAME%/HINT_SEND_LINK_AND_PASSWORD');
 				}
+				if (this.isPrivateKeyAvailable())
+				{
+					this.isSigningAvailable(true);
+					this.sign(true);
+				}
 			}
 			else
 			{
@@ -50,8 +60,15 @@ function SharePopup()
 				{
 					sHint = TextUtils.i18n('%MODULENAME%/HINT_SEND_DIFFERENT_CHANNEL');
 				}
+				this.isSigningAvailable(false);
+				this.sign(false);
 			}
 			this.sendLinkHintText(sHint);
+		}
+		else
+		{
+			this.isSigningAvailable(false);
+			this.sign(false);
 		}
 	});
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
@@ -81,6 +98,16 @@ SharePopup.prototype.onOpen = async function (oItem)
 		this.password(this.item.oExtendedProps.PasswordForSharing ? this.item.oExtendedProps.PasswordForSharing : '');
 		await OpenPgpEncryptor.initKeys();
 		this.keys(OpenPgpEncryptor.getKeys());
+		const sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
+		const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sUserEmail], false);
+		if (aPrivateKeys.length > 0)
+		{
+			this.isPrivateKeyAvailable(true);
+		}
+		else
+		{
+			this.isPrivateKeyAvailable(false);
+		}
 	}
 	else
 	{
@@ -98,6 +125,8 @@ SharePopup.prototype.clearPopup = function ()
 {
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
+	this.passphrase('');
+	this.sign(false);
 };
 
 SharePopup.prototype.onCancelSharingClick = function ()
@@ -228,7 +257,7 @@ SharePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email);
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphrase());
 		if (OpenPgpResult && OpenPgpResult.result)
 		{
 			const sEncryptedBody = OpenPgpResult.result;

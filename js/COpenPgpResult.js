@@ -1,7 +1,6 @@
 'use strict';
 
 /**
- * @todo
  * @constructor
  */
 function COpenPgpResult()

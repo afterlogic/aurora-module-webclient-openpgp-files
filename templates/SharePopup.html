@@ -24,6 +24,24 @@
 				<div class="row" data-bind="style: {'visibility': recipientAutocompleteItem() ? 'visible' : 'hidden'}">
 					<span class="hint" data-bind="text: recipientAutocompleteItem() ? sendLinkHintText() : '&nbsp;' "></span>
 				</div>
+				<div class="row">
+					<div style="white-space: nowrap;" data-bind="css: {'disabled': !isSigningAvailable()}">
+						<label data-bind="css: {'checked': sign}, enable: isSigningAvailable()" class="custom_checkbox checked">
+							<span class="icon"></span>
+							<input type="checkbox" data-bind="checked: sign, enable: isSigningAvailable()" id="openpgp-sign" />
+						</label>
+						<input name="fake_input_for_autocomplete" type="text" class="value input" style="display: none;" />
+						<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}" for="openpgp-sign"></label>
+						<span class="label pgp_password" 
+							data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
+							style: { 'width': '100px', 'margin-left': '0'}">
+						</span>
+						<input autocomplete="new-password" type="password" class="value input" 
+							data-bind="value: passphrase,
+								style: { 'width': '200px'},
+								enable: sign() && isSigningAvailable()" />
+					</div>
+				</div>
 			</div>
 			<div class="buttons">
 				<span class="button remove" data-bind="click: recipientAutocompleteItem() ? sendEmail : false, css: {'disabled': !recipientAutocompleteItem()}">

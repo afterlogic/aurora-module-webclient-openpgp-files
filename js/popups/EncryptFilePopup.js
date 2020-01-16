@@ -38,6 +38,12 @@ function EncryptFilePopup()
 	this.encryptedFilePassword = ko.observable('');
 	this.sendButtonText = ko.observable('');
 	this.hintUnderEncryptionInfo = ko.observable('');
+	this.sign = ko.observable(false);
+	this.isSigningAvailable = ko.observable(false);
+	this.isPrivateKeyAvailable = ko.observable(false);
+	this.passphraseFile = ko.observable('');
+	this.passphraseEmail = ko.observable('');
+	this.showPassphraseEmail = ko.observable(true);
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
 	this.cancelButtonText = ko.computed(() => {
 		return this.isSuccessfullyEncryptedAndUploaded() ?
@@ -81,12 +87,19 @@ function EncryptFilePopup()
 		{
 			case Enums.EncryptionBasedOn.Password:
 				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_PASSWORD_BASED_ENCRYPTION'));
+				this.isSigningAvailable(false);
 				break;
 			case Enums.EncryptionBasedOn.Key:
 				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_KEY_BASED_ENCRYPTION'));
+				if (this.isPrivateKeyAvailable())
+				{
+					this.isSigningAvailable(true);
+					this.sign(true);
+				}
 				break;
 			default:
 				this.encryptionModeHintText('');
+				this.isSigningAvailable(false);
 		}
 	})
 }
@@ -101,6 +114,16 @@ EncryptFilePopup.prototype.onOpen = async function (oFile, oFilesView)
 	this.oFilesView = oFilesView;
 	await OpenPgpEncryptor.initKeys();
 	this.keys(OpenPgpEncryptor.getKeys());
+	const sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
+	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sUserEmail], false);
+	if (aPrivateKeys.length > 0)
+	{
+		this.isPrivateKeyAvailable(true);
+	}
+	else
+	{
+		this.isPrivateKeyAvailable(false);
+	}
 };
 
 EncryptFilePopup.prototype.cancelPopup = function ()
@@ -118,6 +141,9 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.isSuccessfullyEncryptedAndUploaded(false);
 	this.encryptedFileLink('');
 	this.encryptedFilePassword('');
+	this.passphraseFile('');
+	this.passphraseEmail('');
+	this.sign(false);
 };
 
 EncryptFilePopup.prototype.encrypt = async function ()
@@ -127,9 +153,16 @@ EncryptFilePopup.prototype.encrypt = async function ()
 		this.oFile,
 		this.oFilesView,
 		this.recipientAutocompleteItem().email,
-		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password
+		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
+		this.sign(),
+		this.passphraseFile()
 	);
 	this.isEncrypting(false);
+	if (this.sign() && oResult.result)
+	{
+		this.passphraseEmail(this.passphraseFile());
+		this.showPassphraseEmail(false);
+	}
 	this.showResults(oResult);
 };
 
@@ -144,26 +177,26 @@ EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 		['all', App.getUserPublicId(), /*bWithGroups*/ false]
 	);
 	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
-		let aPublicKeys = this.getPublicKeys();
-		let iOwnPublicKeyIndex = aPublicKeys.indexOf(App.getUserPublicId());
+		let aPublicKeysEmails = this.getPublicKeysEmails();
+		let iOwnPublicKeyIndex = aPublicKeysEmails.indexOf(App.getUserPublicId());
 		if (iOwnPublicKeyIndex > -1)
 		{//remove own public key from list
-			aPublicKeys.splice(iOwnPublicKeyIndex, 1);
+			aPublicKeysEmails.splice(iOwnPublicKeyIndex, 1);
 		}
 		aRecipienstList.forEach(oRecipient => {
-			const iIndex = aPublicKeys.indexOf(oRecipient.email);
+			const iIndex = aPublicKeysEmails.indexOf(oRecipient.email);
 			if (iIndex > -1)
 			{
 				oRecipient.hasKey = true;
 				//remove key from list when recipient is marked
-				aPublicKeys.splice(iIndex, 1);
+				aPublicKeysEmails.splice(iIndex, 1);
 			}
 			else
 			{
 				oRecipient.hasKey = false;
 			}
 		});
-		aPublicKeys.forEach(sPublicKey => {
+		aPublicKeysEmails.forEach(sPublicKey => {
 			let aKeys = OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey);
 			if (aKeys && aKeys[0])
 			{
@@ -249,7 +282,7 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email);
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail());
 
 		if (OpenPgpResult && OpenPgpResult.result)
 		{
@@ -282,7 +315,7 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 	}
 };
 
-EncryptFilePopup.prototype.getPublicKeys = function ()
+EncryptFilePopup.prototype.getPublicKeysEmails = function ()
 {
 	let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
 

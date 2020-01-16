@@ -41,6 +41,23 @@
 					<div class="row" data-bind="style: {'visibility': (encryptionBasedMode() !== '') ? 'visible' : 'hidden'}">
 						<span class="hint" data-bind="text: encryptionBasedMode() === '' ? '&nbsp;' : encryptionModeHintText()"></span>
 					</div>
+					<div class="row" data-bind="css: {'disabled': !isSigningAvailable()}">
+						<div style="white-space: nowrap;">
+							<label data-bind="css: {'checked': sign, 'disabled': !isSigningAvailable()}, enable: isSigningAvailable()" class="custom_checkbox checked">
+								<span class="icon"></span>
+								<input type="checkbox" data-bind="checked: sign, enable: isSigningAvailable()" id="openpgp-sign" />
+							</label>
+							<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}" for="openpgp-sign"></label>
+							<input name="fake_input_for_autocomplete" type="text" class="value input" style="display: none;" />
+							<span class="label pgp_password" 
+								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'}, style: { 'width': '100px', 'margin-left': '0'}"></span>
+							<input autocomplete="new-password" type="password" class="value input" 
+								data-bind="value: passphraseFile, style: { 'width': '200px'}, enable: sign() && isSigningAvailable()" />
+						</div>
+					</div>
+					<div class="row">
+						<span class="hint" data-bind="i18n: {'key': '%MODULENAME%/HINT_SIGN_FILE'}"></span>
+					</div>
 				</div>
 				<div data-bind="visible: isSuccessfullyEncryptedAndUploaded()">
 					<div class="encryption-result">
@@ -53,6 +70,28 @@
 					</div>
 					<br>
 					<div class="hint" data-bind="text: hintUnderEncryptionInfo"></div>
+					<div class="row">
+						<div style="white-space: nowrap;">
+							<label data-bind="css: {'checked': sign, 'disabled': !isSigningAvailable()}, enable: isSigningAvailable()" class="custom_checkbox checked">
+								<span class="icon"></span>
+								<input type="checkbox" data-bind="checked: sign, enable: isSigningAvailable()" id="openpgp-sign" />
+							</label>
+							<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}" for="openpgp-sign"></label>
+							<span class="label pgp_password" 
+								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
+								style: { 'width': '100px', 'margin-left': '0'},
+								visible: showPassphraseEmail()">
+							</span>
+							<input autocomplete="new-password" type="password" class="value input" 
+								data-bind="value: passphraseEmail,
+									style: { 'width': '200px'},
+									enable: sign() && isSigningAvailable(),
+									visible: showPassphraseEmail()" />
+						</div>
+					</div>
+					<div class="row">
+						<span class="hint" data-bind="i18n: {'key': '%MODULENAME%/HINT_SIGN_EMAIL'}"></span>
+					</div>
 				</div>
 			</div>
 			<div class="buttons">

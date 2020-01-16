@@ -3,7 +3,6 @@
 let AddressUtils = require('%PathToCoreWebclientModule%/js/utils/Address.js');
 
 /**
- * @todo
  * @param {Object} oOpenPgpKey
  * @constructor
  */

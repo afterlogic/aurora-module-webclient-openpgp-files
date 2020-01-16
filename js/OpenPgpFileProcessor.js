@@ -10,7 +10,6 @@ let
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
-	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
 
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	AlertPopup = require('%PathToCoreWebclientModule%/js/popups/AlertPopup.js'),
@@ -29,7 +28,7 @@ function OpenPgpFileProcessor()
 	this.sPath = null;
 }
 
-OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode)
+OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode, bSign, sPassphrase)
 {
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
@@ -56,7 +55,9 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 			const oEncryptionResult = await OpenPgpEncryptor.encryptData(
 				oBlob,
 				sRecipientEmail,
-				bIsPasswordMode
+				bIsPasswordMode,
+				bSign,
+				sPassphrase
 			);
 			if (!oEncryptionResult.result)
 			{
