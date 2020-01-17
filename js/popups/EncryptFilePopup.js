@@ -44,6 +44,9 @@ function EncryptFilePopup()
 	this.passphraseFile = ko.observable('');
 	this.passphraseEmail = ko.observable('');
 	this.showPassphraseEmail = ko.observable(true);
+	this.showSignForEmail = ko.observable(true);
+	this.signFileHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
+	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
 	this.cancelButtonText = ko.computed(() => {
 		return this.isSuccessfullyEncryptedAndUploaded() ?
@@ -59,11 +62,13 @@ function EncryptFilePopup()
 	this.recipientAutocompleteItem.subscribe(oItem => {
 		if (oItem)
 		{
+			//password-based encryption is available after selecting the recipient
 			this.passwordBasedEncryptionDisabled(false);
 			this.encryptionBasedMode(Enums.EncryptionBasedOn.Password);
 			this.encryptionAvailable(true);
 			if (oItem.hasKey)
 			{
+				//key-based encryption available if we have recipients public key
 				this.keyBasedEncryptionDisabled(false);
 				this.recipientHintText(TextUtils.i18n('%MODULENAME%/HINT_KEY_RECIPIENT'));
 			}
@@ -87,12 +92,15 @@ function EncryptFilePopup()
 		{
 			case Enums.EncryptionBasedOn.Password:
 				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_PASSWORD_BASED_ENCRYPTION'));
+				//Signing is unavailable for file encrypted with password
 				this.isSigningAvailable(false);
+				this.sign(false);
 				break;
 			case Enums.EncryptionBasedOn.Key:
 				this.encryptionModeHintText(TextUtils.i18n('%MODULENAME%/HINT_KEY_BASED_ENCRYPTION'));
 				if (this.isPrivateKeyAvailable())
 				{
+					//Signing is available for file encrypted with key and with available Private Key
 					this.isSigningAvailable(true);
 					this.sign(true);
 				}
@@ -100,8 +108,34 @@ function EncryptFilePopup()
 			default:
 				this.encryptionModeHintText('');
 				this.isSigningAvailable(false);
+				this.sign(true);
 		}
-	})
+	});
+	this.sign.subscribe(bSign => {
+		if (bSign)
+		{
+			this.signFileHintText(TextUtils.i18n('%MODULENAME%/HINT_SIGN_FILE'));
+			this.signEmailHintText(TextUtils.i18n('%MODULENAME%/HINT_SIGN_EMAIL'));
+		}
+		else
+		{
+			this.signFileHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
+			this.signEmailHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
+		}
+	});
+	this.isEncrypting.subscribe(bEncrypting => {
+		//UI elements become disabled when encryption started
+		if (bEncrypting)
+		{
+			this.keyBasedEncryptionDisabled(true);
+			this.passwordBasedEncryptionDisabled(true);
+		}
+		else
+		{
+			this.keyBasedEncryptionDisabled(false);
+			this.passwordBasedEncryptionDisabled(false);
+		}
+	});
 }
 
 _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
@@ -143,6 +177,8 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.encryptedFilePassword('');
 	this.passphraseFile('');
 	this.passphraseEmail('');
+	this.showPassphraseEmail(true);
+	this.showSignForEmail(true);
 	this.sign(false);
 };
 
@@ -162,6 +198,15 @@ EncryptFilePopup.prototype.encrypt = async function ()
 	{
 		this.passphraseEmail(this.passphraseFile());
 		this.showPassphraseEmail(false);
+	}
+	//Allow email message signing only in case when we have recipient public key and key encryption mode has been chosen
+	if (this.recipientAutocompleteItem().hasKey && this.encryptionBasedMode() === Enums.EncryptionBasedOn.Key)
+	{
+		this.showSignForEmail(true);
+	}
+	else
+	{
+		this.showSignForEmail(false);
 	}
 	this.showResults(oResult);
 };
