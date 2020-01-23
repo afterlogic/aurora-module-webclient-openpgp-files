@@ -6,7 +6,7 @@
 		<div class="fields">
 			<div class="fieldset">
 				<div class="row">
-					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_PUBLIC_LINK'}"></span>
+					<span class="label" data-bind="text: linkLabel()"></span>
 					<input readonly="readonly" spellcheck="false" class="value input" type="text" maxlength="255" data-bind="hasfocus: publicLinkFocus, value: publicLink, click: function () {$element.select();}" />
 				</div>
 				<div class="row" data-bind="visible: password()">
@@ -22,25 +22,30 @@
 					" />
 				</div>
 				<div class="row" data-bind="style: {'visibility': recipientAutocompleteItem() ? 'visible' : 'hidden'}">
-					<span class="hint" data-bind="text: recipientAutocompleteItem() ? sendLinkHintText() : '&nbsp;' "></span>
+					<span class="hint" data-bind="html: recipientAutocompleteItem() ? sendLinkHintText() : '&nbsp;<br>&nbsp;' "></span>
 				</div>
-				<div class="row">
+				<div class="row" data-bind="visible: password()">
 					<div style="white-space: nowrap;" data-bind="css: {'disabled': !isSigningAvailable()}">
 						<label data-bind="css: {'checked': sign}, enable: isSigningAvailable()" class="custom_checkbox checked">
 							<span class="icon"></span>
 							<input type="checkbox" data-bind="checked: sign, enable: isSigningAvailable()" id="openpgp-sign" />
 						</label>
 						<input name="fake_input_for_autocomplete" type="text" class="value input" style="display: none;" />
-						<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}" for="openpgp-sign"></label>
-						<span class="label pgp_password" 
-							data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
-							style: { 'width': '100px', 'margin-left': '0'}">
+						<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}, style: {'margin': '5px 0', 'display': 'inline-block'}" for="openpgp-sign"></label>
+						<span data-bind="visible: sign()">
+							<span class="label pgp_password" 
+								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
+								style: { 'width': '100px', 'margin-left': '0'}">
+							</span>
+							<input autocomplete="new-password" type="password" class="value input" 
+								data-bind="value: passphrase,
+									style: { 'width': '200px'},
+									enable: sign() && isSigningAvailable()" />
 						</span>
-						<input autocomplete="new-password" type="password" class="value input" 
-							data-bind="value: passphrase,
-								style: { 'width': '200px'},
-								enable: sign() && isSigningAvailable()" />
 					</div>
+				</div>
+				<div class="row" data-bind="visible: password()">
+					<span class="hint" data-bind="text: signEmailHintText"></span>
 				</div>
 			</div>
 			<div class="buttons">
