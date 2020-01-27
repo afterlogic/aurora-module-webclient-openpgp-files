@@ -14,12 +14,15 @@
 					<input readonly="readonly" spellcheck="false" class="value input" type="text" maxlength="255" data-bind="value: password, click: function () {$element.select();}" />
 				</div>
 				<div class="row">
-					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_RECIPIENT'}"></span>
-					<input id="select_recipient_input" class="value input" spellcheck="false" type="text" autocomplete="on"
-						data-bind="value: recipientAutocomplete,
-						valueUpdate: ['blur', 'afterkeydown'],
-						autocompleteSimple: {callback: autocompleteCallback.bind($data), dataAccessor: recipientAutocompleteItem}
-					" />
+					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_RECIPIENT'}, style: {'vertical-align': 'middle'}"></span>
+					<span class="input select-recipient">
+						<input id="select_recipient_input" class="value" spellcheck="false" type="text" autocomplete="on"
+							data-bind="value: recipientAutocomplete,
+							valueUpdate: ['blur', 'afterkeydown'],
+							autocompleteSimple: {callback: autocompleteCallback.bind($data), dataAccessor: recipientAutocompleteItem}
+						" />
+						<span class="icon" data-bind="visible: recipientAutocompleteItem() && recipientAutocompleteItem().hasKey"></span>
+					</span>
 				</div>
 				<div class="row" data-bind="style: {'visibility': recipientAutocompleteItem() ? 'visible' : 'hidden'}">
 					<span class="hint" data-bind="html: recipientAutocompleteItem() ? sendLinkHintText() : '&nbsp;<br>&nbsp;' "></span>
