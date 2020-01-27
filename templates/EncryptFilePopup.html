@@ -76,28 +76,6 @@
 					</div>
 					<br>
 					<div class="hint" data-bind="text: hintUnderEncryptionInfo"></div>
-					<div class="row" data-bind="visible: showSignForEmail()">
-						<div style="white-space: nowrap;">
-							<label data-bind="css: {'checked': sign, 'disabled': !isPrivateKeyAvailable()}" class="custom_checkbox checked">
-								<span class="icon"></span>
-								<input type="checkbox" data-bind="checked: sign, disable: !isPrivateKeyAvailable()" id="openpgp-sign" />
-							</label>
-							<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}, style: { 'display': 'inline-block', 'margin': '5px 0'}" for="openpgp-sign"></label>
-							<span class="label pgp_password" 
-								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
-									style: { 'width': '100px', 'margin-left': '0'},
-									visible: sign() && showPassphraseEmail()">
-							</span>
-							<input autocomplete="new-password" type="password" class="value input" 
-								data-bind="value: passphraseEmail,
-									style: { 'width': '200px'},
-									disable: !sign() || !isPrivateKeyAvailable(),
-									visible: sign() && showPassphraseEmail()" />
-						</div>
-					</div>
-					<div class="row" data-bind="visible: showSignForEmail()">
-						<span class="hint" data-bind="text: signEmailHintText"></span>
-					</div>
 				</div>
 			</div>
 			<div class="buttons">

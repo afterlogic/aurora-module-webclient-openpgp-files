@@ -43,8 +43,6 @@ function EncryptFilePopup()
 	this.isPrivateKeyAvailable = ko.observable(false);
 	this.passphraseFile = ko.observable('');
 	this.passphraseEmail = ko.observable('');
-	this.showPassphraseEmail = ko.observable(true);
-	this.showSignForEmail = ko.observable(true);
 	this.signFileHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
 	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
@@ -177,8 +175,6 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.encryptedFilePassword('');
 	this.passphraseFile('');
 	this.passphraseEmail('');
-	this.showPassphraseEmail(true);
-	this.showSignForEmail(true);
 	this.sign(false);
 };
 
@@ -197,16 +193,6 @@ EncryptFilePopup.prototype.encrypt = async function ()
 	if (this.sign() && oResult.result)
 	{
 		this.passphraseEmail(this.passphraseFile());
-		this.showPassphraseEmail(false);
-	}
-	//Allow email message signing only in case when we have recipient public key and key encryption mode has been chosen
-	if (this.recipientAutocompleteItem().hasKey && this.encryptionBasedMode() === Enums.EncryptionBasedOn.Key)
-	{
-		this.showSignForEmail(true);
-	}
-	else
-	{
-		this.showSignForEmail(false);
 	}
 	this.showResults(oResult);
 };
@@ -284,7 +270,14 @@ EncryptFilePopup.prototype.showResults = function (oData)
 			else
 			{
 				const sUserName = this.recipientAutocompleteItem().name ? this.recipientAutocompleteItem().name : this.recipientAutocompleteItem().email;
-				this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_EMAIL', {'USER': sUserName}));
+				if (this.sign())
+				{
+					this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_SIGNED_EMAIL', {'USER': sUserName}));
+				}
+				else
+				{
+					this.hintUnderEncryptionInfo(TextUtils.i18n('%MODULENAME%/HINT_ENCRYPTED_EMAIL', {'USER': sUserName}));
+				}
 			}
 		}
 		else
