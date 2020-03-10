@@ -1,0 +1,38 @@
+<div class="sharing_panel large self_destructing_panel">
+	<div data-bind="visible: !isDecryptedSuccessfully()">
+		<div class="fields">
+			<div class="fieldset">
+				<div class="row" data-bind="visible: isDecryptionAvailable()">
+					<span class="label" data-bind="text: passwordLabel"></span>
+					<input autocomplete="new-password" type="password" class="value input" data-bind="value: enteredPassword" />
+				</div>
+				<div class="row" data-bind="visible: !isDecryptionAvailable() && isShowNoKeyErrorMessage()">
+					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/ERROR_NO_KEY'}"></span>
+				</div>
+			</div>
+		</div>
+		<span class="buttons">
+			<span class="button" data-bind="click: isDecrypting() ? false : decryptMessage, visible: isDecryptionAvailable(), css: {'disabled': isDecrypting()}">
+				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDecrypting()"></span>
+				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDecrypting()"></span>
+			</span>
+		</span>
+	</div>
+	<div class="popup_panel" data-bind="visible: isDecryptedSuccessfully()">
+		<div class="fields">
+			<div class="fieldset">
+				<div class="row">
+					<span class="hint" data-bind="text: ExpireDateMessage"></span>
+				</div>
+				<div class="row">
+					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/LABEL_SUBJECT'}"></span>
+					<span data-bind="text: subject"></span>
+				</div>
+				<div class="row">
+					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/LABEL_MESSAGE'}"></span>
+					<span data-bind="text: message"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

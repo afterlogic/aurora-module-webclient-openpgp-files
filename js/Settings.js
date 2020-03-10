@@ -8,6 +8,7 @@ let
 module.exports = {
 	ServerModuleName: 'OpenPgpFilesWebclient',
 	HashModuleName: 'openpgp-files',
+	SelfDestructMessageHash: 'self-destruct',
 	ProductName: '',
 
 	PublicFileData: {},

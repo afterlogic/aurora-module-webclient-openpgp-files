@@ -359,31 +359,41 @@ OpenPgpEncryptor.prototype.getPublicKeysIfExistsByEmail = function (sEmail)
 };
 
 /**
- * @param {blob} oBlob
+ * @param {blob|string} Data
  * @param {string} sPrincipalsEmail
  * @param {boolean} bPasswordBasedEncryption
  * @return {COpenPgpResult}
  */
-OpenPgpEncryptor.prototype.encryptData = async function (oBlob, sPrincipalsEmail, bPasswordBasedEncryption, bSign, sPassphrase)
+OpenPgpEncryptor.prototype.encryptData = async function (Data, sPrincipalsEmail, bPasswordBasedEncryption, bSign, sPassphrase)
 {
 	let
 		oResult = new COpenPgpResult(),
 		aPublicKeys = [],
 		sPassword = '',
-		buffer = await new Response(oBlob).arrayBuffer(),
+		bIsBlob = Data instanceof Blob,
+		buffer = null,
 		sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '',
-		aPrivateKeys = this.findKeysByEmails([sUserEmail], false)
+		aEmailForEncrypt = this.findKeysByEmails([sUserEmail], true).length > 0 ? [sPrincipalsEmail, sUserEmail] : [sPrincipalsEmail],
+		aPrivateKeys = this.findKeysByEmails([sUserEmail], false),
+		oOptions = {}
 	;
 
 	oResult.result = false;
 	if (!oResult.hasErrors())
 	{
-		let oOptions = {
-			message: openpgp.message.fromBinary(new Uint8Array(buffer)),
-			armor: false
-		};
-		oBlob = null;
-		buffer = null;
+		if (bIsBlob)
+		{
+			buffer = await new Response(Data).arrayBuffer();
+			oOptions.message = openpgp.message.fromBinary(new Uint8Array(buffer));
+			oOptions.armor = false;
+			Data = null;
+			buffer = null;
+		}
+		else
+		{
+			oOptions.message = openpgp.message.fromText(Data);
+		}
+		
 		if (bPasswordBasedEncryption)
 		{
 			sPassword = this.generatePassword();
@@ -391,11 +401,11 @@ OpenPgpEncryptor.prototype.encryptData = async function (oBlob, sPrincipalsEmail
 		}
 		else
 		{
-			aPublicKeys = this.findKeysByEmails([sPrincipalsEmail], true, oResult);
+			aPublicKeys = this.findKeysByEmails(aEmailForEncrypt, true, oResult);
 			oOptions.publicKeys = this.convertToNativeKeys(aPublicKeys);
 		}
 
-		if (bSign && aPrivateKeys && aPrivateKeys.length > 0)
+		if (bSign && aPrivateKeys && aPrivateKeys.length > 0 && !bPasswordBasedEncryption)
 		{
 			let
 				oPrivateKey = this.convertToNativeKeys(aPrivateKeys)[0],
@@ -405,19 +415,21 @@ OpenPgpEncryptor.prototype.encryptData = async function (oBlob, sPrincipalsEmail
 			await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPassphrase, sUserEmail);
 			oOptions.privateKeys = [oPrivateKeyClone];
 		}
-
-		try
+		if (!oResult.hasErrors())
 		{
-			let oPgpResult = await openpgp.encrypt(oOptions);
+			try
+			{
+				let oPgpResult = await openpgp.encrypt(oOptions);
 
-			oResult.result = {
-				data:		oPgpResult.message.packets.write(),
-				password:	sPassword
-			};
-		}
-		catch (e)
-		{
-			oResult.addExceptionMessage(e, Enums.OpenPgpErrors.EncryptError);
+				oResult.result = {
+					data:		bIsBlob ? oPgpResult.message.packets.write() : oPgpResult.data,
+					password:	sPassword
+				};
+			}
+			catch (e)
+			{
+				oResult.addExceptionMessage(e, Enums.OpenPgpErrors.EncryptError);
+			}
 		}
 	}
 
@@ -425,26 +437,35 @@ OpenPgpEncryptor.prototype.encryptData = async function (oBlob, sPrincipalsEmail
 };
 
 /**
- * @param {blob} oBlob
+ * @param {blob|string} Data
  * @param {string} sAccountEmail
  * @param {string} sPassword
  * @param {boolean} sPassword
  * @return {string}
  */
-OpenPgpEncryptor.prototype.decryptData = async function (oBlob, sAccountEmail, sPassword, bPasswordBasedEncryption)
+OpenPgpEncryptor.prototype.decryptData = async function (Data, sAccountEmail, sPassword, bPasswordBasedEncryption)
 {
 	let
 		oResult = new COpenPgpResult(),
-		buffer = await new Response(oBlob).arrayBuffer(),
+		bIsBlob = Data instanceof Blob,
+		buffer = null,
 		aPrivateKeys = [],
 		aPublicKeys = this.getPublicKeys(),
 		oOptions = {
-			message: await openpgp.message.read(new Uint8Array(buffer)),
-			format: 'binary',
 			publicKeys: this.convertToNativeKeys(aPublicKeys) // for verification
 		}
 	;
 
+	if (bIsBlob)
+	{
+		buffer = await new Response(Data).arrayBuffer();
+		oOptions.message = await openpgp.message.read(new Uint8Array(buffer));
+		oOptions.format = 'binary';
+	}
+	else
+	{
+		oOptions.message = await openpgp.message.readArmored(Data);
+	}
 	oResult.result = false;
 	if (bPasswordBasedEncryption)
 	{
@@ -469,7 +490,7 @@ OpenPgpEncryptor.prototype.decryptData = async function (oBlob, sAccountEmail, s
 		try
 		{
 			let oPgpResult = await openpgp.decrypt(oOptions);
-			oResult.result = oPgpResult.data;
+			oResult.result = await openpgp.stream.readToEnd(oPgpResult.data);
 			//if result contains invalid signatures 
 			let aValidityPromises = [];
 			for (let oSignature of oPgpResult.signatures)
@@ -536,57 +557,22 @@ OpenPgpEncryptor.prototype.isDataEncryptedWithPassword = async function (oBlob)
 };
 
 /**
- * @param {blob} oBlob
+ * @param {string} sMessage
  * @param {string} aPrincipalsEmail
  * @param {boolean} bPasswordBasedEncryption
  * @return {COpenPgpResult}
  */
 OpenPgpEncryptor.prototype.encryptMessage = async function (sMessage, sPrincipalsEmail, bSign, sPassphrase)
 {
-	let
-		oResult = new COpenPgpResult(),
-		sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '',
-		aEmailForEncrypt = this.findKeysByEmails([sUserEmail], true).length > 0 ? [sPrincipalsEmail, sUserEmail] : [sPrincipalsEmail],
-		aPublicKeys = this.findKeysByEmails(aEmailForEncrypt, true, oResult),
-		sСurrentAccountEmail = App.currentAccountEmail ? App.currentAccountEmail() : '',
-		aPrivateKeys = this.findKeysByEmails([sСurrentAccountEmail], false)
-	;
+	let oEncryptionResult = await this.encryptData(sMessage, sPrincipalsEmail, /*bPasswordBasedEncryption*/false, bSign, sPassphrase);
 
-	oResult.result = false;
-	if (!oResult.hasErrors())
+	if (oEncryptionResult.result)
 	{
-		let oOptions = {
-			message: openpgp.message.fromText(sMessage),
-			publicKeys: this.convertToNativeKeys(aPublicKeys)
-		};
-
-		if (bSign && aPrivateKeys && aPrivateKeys.length > 0)
-		{
-			let
-				oPrivateKey = this.convertToNativeKeys(aPrivateKeys)[0],
-				oPrivateKeyClone = await this.cloneKey(oPrivateKey)
-			;
-
-			await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPassphrase, sUserEmail);
-			oOptions.privateKeys = [oPrivateKeyClone];
-		}
-
-		try
-		{
-			let oPgpResult = await openpgp.encrypt(oOptions);
-			oResult.result = oPgpResult.data;
-		}
-		catch (e)
-		{
-			oResult.addExceptionMessage(e, Enums.OpenPgpErrors.EncryptError);
-		}
-	}
-	else
-	{
-		oResult.addError(Enums.OpenPgpErrors.EncryptError);
+		let {data, password} = oEncryptionResult.result;
+		oEncryptionResult.result = data;
 	}
 
-	return oResult;
+	return oEncryptionResult;
 };
 
 OpenPgpEncryptor.prototype.generatePassword = function ()
