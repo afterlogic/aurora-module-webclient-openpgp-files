@@ -24,13 +24,11 @@
 				<div class="row">
 					<span class="hint" data-bind="text: ExpireDateMessage"></span>
 				</div>
-				<div class="row">
-					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/LABEL_SUBJECT'}"></span>
+				<div class="row subject">
 					<span data-bind="text: subject"></span>
 				</div>
-				<div class="row">
-					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/LABEL_MESSAGE'}"></span>
-					<span data-bind="text: message"></span>
+				<div class="row message">
+					<pre data-bind="text: message"></pre>
 				</div>
 			</div>
 		</div>
