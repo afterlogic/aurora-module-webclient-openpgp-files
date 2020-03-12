@@ -97,7 +97,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			if (!empty($mMin['__hash__']))
 			{
 				$mResult['link'] = '?/files-pub/' . $mMin['__hash__'] . '/list';
-				$mResult['password'] = isset($mMin['Password']) ? \Aurora\System\Utils::DecryptValue($mMin['Password']) : '';
 			}
 			else
 			{
@@ -122,7 +121,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				if (!empty($mMin['__hash__']))
 				{
 					$mResult['link'] = '?/files-pub/' . $mMin['__hash__'] . '/list';
-					$mResult['password'] = isset($mMin['Password']) ? $mMin['Password'] : '';
 				}
 			}
 		}
