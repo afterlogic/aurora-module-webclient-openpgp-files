@@ -19,7 +19,7 @@
 	<span class="buttons">
 		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
-			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
+			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
 		</span>
 		<a class="button download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink"></a>
 		<span class="button" data-bind="click: securedLinkDownload,

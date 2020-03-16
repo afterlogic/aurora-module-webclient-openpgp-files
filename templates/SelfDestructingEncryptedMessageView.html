@@ -13,8 +13,8 @@
 		</div>
 		<span class="buttons">
 			<span class="button" data-bind="click: isDecrypting() ? false : decryptMessage, visible: isDecryptionAvailable(), css: {'disabled': isDecrypting()}">
-				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDecrypting()"></span>
-				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDecrypting()"></span>
+				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DECRYPT_MESSAGE'}, visible: !isDecrypting()"></span>
+				<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DECRYPT_MESSAGE_IN_PROGRESS'}, visible: isDecrypting()"></span>
 			</span>
 		</span>
 	</div>
