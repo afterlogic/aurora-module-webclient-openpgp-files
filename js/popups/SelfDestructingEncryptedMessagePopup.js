@@ -14,7 +14,8 @@ let
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
-	Settings = require('modules/%ModuleName%/js/Settings.js')
+	Settings = require('modules/%ModuleName%/js/Settings.js'),
+	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js')
 ;
 /**
  * @constructor
@@ -261,6 +262,10 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 			//compose message
 			const sSubject = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_SUBJECT');
 			let sBody = "";
+			let sBrowserTimezone = moment.tz.guess();
+			let sServerTimezone = UserSettings.timezone();
+			let sCurrentTime = moment.tz(new Date(), sBrowserTimezone || sServerTimezone).format('MMM D, YYYY HH:mm [GMT] ZZ');
+
 			if (this.recipientAutocompleteItem().hasKey)
 			{//encrypt message with key
 				if (password)
@@ -272,7 +277,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 							'PASSWORD': password,
 							'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
 							'HOURS': this.selectedLifetimeHrs(),
-							'CREATING_TIME_GMT': moment.tz(new Date(), "GMT").format("YYYY-MM-DD HH:mm:ss")
+							'CREATING_TIME_GMT': sCurrentTime
 						}
 					);
 				}
@@ -284,7 +289,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 							'BR': '\r\n',
 							'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
 							'HOURS': this.selectedLifetimeHrs(),
-							'CREATING_TIME_GMT': moment.tz(new Date(), "GMT").format("YYYY-MM-DD HH:mm:ss")
+							'CREATING_TIME_GMT': sCurrentTime
 						}
 					);
 				}
@@ -311,13 +316,13 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 				//if the recipient does not have a key, the message can only be encrypted with a password 
 				if (password)
 				{
-					sBody = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY',
+					sBody = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY_NOT_ENCRYPTED',
 						{
 							'URL': sFullLink,
 							'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
 							'BR': '<br>',
 							'HOURS': this.selectedLifetimeHrs(),
-							'CREATING_TIME_GMT': moment.tz(new Date(), "GMT").format("YYYY-MM-DD HH:mm:ss")
+							'CREATING_TIME_GMT': sCurrentTime
 						}
 					);
 					this.showPassword(password);
