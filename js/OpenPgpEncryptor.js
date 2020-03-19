@@ -598,4 +598,27 @@ OpenPgpEncryptor.prototype.generatePassword = function ()
 	return sPassword;
 };
 
+OpenPgpEncryptor.prototype.getEncryptionKeyFromArmoredMessage = async function (sArmoredMessage)
+{
+	let oMessage = await openpgp.message.readArmored(sArmoredMessage);
+
+	let aEncryptionKeys = oMessage.getEncryptionKeyIds();
+	let oEncryptionKey = null;
+
+	if (aEncryptionKeys.length > 0)
+	{
+		for (let key of aEncryptionKeys)
+		{
+			let oKey = this.findKeyByID(key.toHex(), false);
+			if (oKey)
+			{
+				oEncryptionKey = oKey;
+				break;
+			}
+		}
+	}
+
+	return oEncryptionKey;
+};
+
 module.exports = new OpenPgpEncryptor();
