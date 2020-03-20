@@ -240,7 +240,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 									{//encrypted link
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
-										$this->aPublicFileData['IsSecuredLink'] = true;
+										$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
 									}
 									$mResult = \strtr(
 										$sResult,
