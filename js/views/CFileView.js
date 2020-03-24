@@ -3,7 +3,7 @@
 let
 	_ = require('underscore'),
 	ko = require('knockout'),
-	videojs = require('video.js'),
+	videojs = require('modules/%ModuleName%/js/vendors/video.min.js'),
 
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
@@ -17,7 +17,7 @@ let
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
 ;
 
-require('node_modules/video.js/dist/video-js.css');
+require('modules/%ModuleName%/styles/vendors/video-js.css');
 /**
 * @constructor
 */
@@ -181,7 +181,7 @@ CFileView.prototype.isFileAudio = function (sFileName)
 CFileView.prototype.showVideoPlayer = function (sSrc)
 {
 	let sType = 'video/' + Utils.getFileExtension(this.fileName).toLowerCase();
-	this.oPlayer = videojs.default('video-player');
+	this.oPlayer = videojs('video-player');
 	this.oPlayer.src({type: sType, src: sSrc});
 	this.bShowVideoPlayer(true);
 };
@@ -189,7 +189,7 @@ CFileView.prototype.showVideoPlayer = function (sSrc)
 CFileView.prototype.showAudioPlayer = function (sSrc)
 {
 	let sType = 'audio/' + Utils.getFileExtension(this.fileName).toLowerCase();
-	this.oPlayer = videojs.default('audio-player');
+	this.oPlayer = videojs('audio-player');
 	this.oPlayer.src({type: sType, src: sSrc});
 	this.bShowAudioPlayer(true);
 };
