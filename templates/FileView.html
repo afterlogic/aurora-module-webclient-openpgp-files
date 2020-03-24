@@ -1,4 +1,4 @@
-<div class="sharing_panel large">
+<div class="sharing_panel large" data-bind="css: {'media': isMedia()}">
 	<div class="item file">
 		<div class="item_content">
 			<span class="data">
@@ -16,7 +16,32 @@
 			</div>
 		</div>
 	</div>
+	<div class="video-container" data-bind="visible: bShowVideoPlayer()">
+		<video
+			id="video-player"
+			class="video-js"
+			controls
+			width="640"
+			autoplay
+			data-setup="{}"
+		>
+		</video>
+	</div>
+	<div class="audio-container" data-bind="visible: bShowAudioPlayer()">
+		<audio
+			id="audio-player"
+			class="video-js"
+			controls
+			autoplay
+			data-setup="{}"
+		>
+		</audio>
+	</div>
 	<span class="buttons">
+		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : play,
+			visible: bShowPlayButton(),
+			css: {'disabled': isDownloadingAndDecrypting()},
+			i18n: {'key': '%MODULENAME%/ACTION_PLAY'} "></span>
 		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>

@@ -169,6 +169,20 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		return $mResult;
 	}
 
+	public function ValidatePublicLinkPassword($UserId, $Hash, $Password)
+	{
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		$bResult = false;
+		$oMin = \Aurora\Modules\Min\Module::getInstance();
+		$mMin = $oMin->GetMinByHash($Hash);
+		if ($mMin && isset($mMin['Password']) && \Aurora\System\Utils::DecryptValue($mMin['Password']) === $Password)
+		{
+			$bResult = true;
+		}
+
+		return $bResult;
+	}
+
 	/***** public functions might be called with web API *****/
 
 	public function onFileEntryPub(&$aData, &$mResult)
@@ -219,7 +233,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 								{
 									$sUrl = (bool) $oFilesWebclientModule->getConfig('ServerUseUrlRewrite', false) ? '/download/' : '?/files-pub/';
 									$this->aPublicFileData = [
-										'Url'			=> $sUrl . $aData['__hash__']
+										'Url'	=> $sUrl . $aData['__hash__'],
+										'Hash'	=> $aData['__hash__']
 									];
 									if ($bSelfDestructingEncryptedMessage)
 									{
