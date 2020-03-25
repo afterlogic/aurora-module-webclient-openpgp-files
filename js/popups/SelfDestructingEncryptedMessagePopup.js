@@ -27,6 +27,7 @@ function SelfDestructingEncryptedMessagePopup()
 	this.sSubject = null;
 	this.sPlainText = null;
 	this.sRecipientEmail = null;
+	this.sFromEmail = null;
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.recipientAutocomplete = ko.observable('');
 	this.keyBasedEncryptionDisabled = ko.observable(true);
@@ -160,15 +161,15 @@ _.extendOwn(SelfDestructingEncryptedMessagePopup.prototype, CAbstractPopup.proto
 
 SelfDestructingEncryptedMessagePopup.prototype.PopupTemplate = '%ModuleName%_SelfDestructingEncryptedMessagePopup';
 
-SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, sRecipientEmail)
+SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, sRecipientEmail, sFromEmail)
 {
 	this.sSubject = sSubject;
 	this.sPlainText = sPlainText;
 	this.sRecipientEmail = sRecipientEmail;
+	this.sFromEmail = sFromEmail;
 	await OpenPgpEncryptor.initKeys();
 	this.keys(OpenPgpEncryptor.getKeys());
-	const sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
-	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sUserEmail], false);
+	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
 	if (aPrivateKeys.length > 0)
 	{
 		this.isPrivateKeyAvailable(true);
@@ -224,6 +225,7 @@ SelfDestructingEncryptedMessagePopup.prototype.clearPopup = function ()
 {
 	this.sPlainText = null;
 	this.sRecipientEmail = null;
+	this.sFromEmail = null;
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
 	this.isSuccessfullyEncryptedAndUploaded(false);
@@ -243,7 +245,8 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 		this.recipientAutocompleteItem().email,
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
 		this.sign(),
-		this.passphraseEmail()
+		this.passphraseEmail(),
+		this.sFromEmail
 	);
 
 	if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
@@ -293,7 +296,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 						}
 					);
 				}
-				const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail());
+				const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail(), this.sFromEmail);
 				if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
 				{
 					const sEncryptedBody = OpenPgpResult.result;

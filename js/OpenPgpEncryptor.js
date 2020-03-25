@@ -364,7 +364,7 @@ OpenPgpEncryptor.prototype.getPublicKeysIfExistsByEmail = function (sEmail)
  * @param {boolean} bPasswordBasedEncryption
  * @return {COpenPgpResult}
  */
-OpenPgpEncryptor.prototype.encryptData = async function (Data, sPrincipalsEmail, bPasswordBasedEncryption, bSign, sPassphrase)
+OpenPgpEncryptor.prototype.encryptData = async function (Data, sPrincipalsEmail, bPasswordBasedEncryption, bSign, sPassphrase, sFromEmail)
 {
 	let
 		oResult = new COpenPgpResult(),
@@ -372,9 +372,8 @@ OpenPgpEncryptor.prototype.encryptData = async function (Data, sPrincipalsEmail,
 		sPassword = '',
 		bIsBlob = Data instanceof Blob,
 		buffer = null,
-		sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '',
-		aEmailForEncrypt = this.findKeysByEmails([sUserEmail], true).length > 0 ? [sPrincipalsEmail, sUserEmail] : [sPrincipalsEmail],
-		aPrivateKeys = this.findKeysByEmails([sUserEmail], false),
+		aEmailForEncrypt = this.findKeysByEmails([sFromEmail], true).length > 0 ? [sPrincipalsEmail, sFromEmail] : [sPrincipalsEmail],
+		aPrivateKeys = this.findKeysByEmails([sFromEmail], false),
 		oOptions = {}
 	;
 
@@ -412,7 +411,7 @@ OpenPgpEncryptor.prototype.encryptData = async function (Data, sPrincipalsEmail,
 				oPrivateKeyClone = await this.cloneKey(oPrivateKey)
 			;
 
-			await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPassphrase, sUserEmail);
+			await this.decryptKeyHelper(oResult, oPrivateKeyClone, sPassphrase, sFromEmail);
 			oOptions.privateKeys = [oPrivateKeyClone];
 		}
 		if (!oResult.hasErrors())
@@ -562,9 +561,9 @@ OpenPgpEncryptor.prototype.isDataEncryptedWithPassword = async function (oBlob)
  * @param {boolean} bPasswordBasedEncryption
  * @return {COpenPgpResult}
  */
-OpenPgpEncryptor.prototype.encryptMessage = async function (sMessage, sPrincipalsEmail, bSign, sPassphrase)
+OpenPgpEncryptor.prototype.encryptMessage = async function (sMessage, sPrincipalsEmail, bSign, sPassphrase, sFromEmail)
 {
-	let oEncryptionResult = await this.encryptData(sMessage, sPrincipalsEmail, /*bPasswordBasedEncryption*/false, bSign, sPassphrase);
+	let oEncryptionResult = await this.encryptData(sMessage, sPrincipalsEmail, /*bPasswordBasedEncryption*/false, bSign, sPassphrase, sFromEmail);
 
 	if (oEncryptionResult.result)
 	{

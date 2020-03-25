@@ -51,13 +51,15 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 		const oBlob = await this.downloadFile();
 		if (oBlob instanceof Blob)
 		{
+			let sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
 			//file encryption
 			const oEncryptionResult = await OpenPgpEncryptor.encryptData(
 				oBlob,
 				sRecipientEmail,
 				bIsPasswordMode,
 				bSign,
-				sPassphrase
+				sPassphrase,
+				sUserEmail
 			);
 			if (!oEncryptionResult.result)
 			{

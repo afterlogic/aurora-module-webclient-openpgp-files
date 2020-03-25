@@ -38,6 +38,7 @@ function SharePopup()
 	this.passphrase = ko.observable('');
 	this.isPrivateKeyAvailable = ko.observable(false);
 	this.isSigningAvailable = ko.observable(false);
+	this.sUserEmail = '';
 	this.recipientAutocompleteItem.subscribe( oItem => {
 		if (oItem)
 		{
@@ -125,8 +126,8 @@ SharePopup.prototype.onOpen = async function (oItem)
 		}
 		await OpenPgpEncryptor.initKeys();
 		this.keys(OpenPgpEncryptor.getKeys());
-		const sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
-		const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sUserEmail], false);
+		this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
+		const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sUserEmail], false);
 		if (aPrivateKeys.length > 0)
 		{
 			this.isPrivateKeyAvailable(true);
@@ -155,6 +156,7 @@ SharePopup.prototype.clearPopup = function ()
 	this.passphrase('');
 	this.sign(false);
 	this.isEmailEncryptionAvailable(false);
+	this.sUserEmail = '';
 };
 
 SharePopup.prototype.onCancelSharingClick = function ()
@@ -285,7 +287,7 @@ SharePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphrase());
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphrase(), this.sUserEmail);
 		if (OpenPgpResult && OpenPgpResult.result)
 		{
 			const sEncryptedBody = OpenPgpResult.result;

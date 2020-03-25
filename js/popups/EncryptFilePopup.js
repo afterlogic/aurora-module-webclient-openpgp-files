@@ -46,6 +46,7 @@ function EncryptFilePopup()
 	this.signFileHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
 	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
+	this.sUserEmail = '';
 	this.cancelButtonText = ko.computed(() => {
 		return this.isSuccessfullyEncryptedAndUploaded() ?
 			TextUtils.i18n('COREWEBCLIENT/ACTION_CLOSE') :
@@ -146,8 +147,8 @@ EncryptFilePopup.prototype.onOpen = async function (oFile, oFilesView)
 	this.oFilesView = oFilesView;
 	await OpenPgpEncryptor.initKeys();
 	this.keys(OpenPgpEncryptor.getKeys());
-	const sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
-	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sUserEmail], false);
+	this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
+	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sUserEmail], false);
 	if (aPrivateKeys.length > 0)
 	{
 		this.isPrivateKeyAvailable(true);
@@ -176,6 +177,7 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.passphraseFile('');
 	this.passphraseEmail('');
 	this.sign(false);
+	this.sUserEmail = '';
 };
 
 EncryptFilePopup.prototype.encrypt = async function ()
@@ -320,7 +322,7 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail());
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail(), this.sUserEmail);
 
 		if (OpenPgpResult && OpenPgpResult.result)
 		{

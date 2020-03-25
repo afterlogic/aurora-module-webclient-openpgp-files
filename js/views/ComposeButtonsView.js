@@ -95,7 +95,8 @@ CComposeButtonsView.prototype.send = function ()
 		Popups.showPopup(SelfDestructingEncryptedMessagePopup, [
 			this.oCompose.getSubject(),
 			this.oCompose.getPlainText(),
-			this.oCompose.getRecipientEmails()[0] ? this.oCompose.getRecipientEmails()[0] : null
+			this.oCompose.getRecipientEmails()[0] ? this.oCompose.getRecipientEmails()[0] : null,
+			this.oCompose.getFromEmail()
 		]);
 	}
 };
