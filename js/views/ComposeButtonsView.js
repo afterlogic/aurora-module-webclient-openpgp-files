@@ -19,7 +19,7 @@ CComposeButtonsView.prototype.ViewTemplate = '%ModuleName%_ComposeButtonsView';
 
 /**
  * Assigns compose external interface.
- * 
+ *
  * @param {Object} oCompose Compose external interface object.
  * @param {Function} oCompose.isHtml Returns **true** if html mode is switched on in html editor.
  * @param {Function} oCompose.hasAttachments Returns **true** if some files were attached to message.
@@ -32,9 +32,9 @@ CComposeButtonsView.prototype.ViewTemplate = '%ModuleName%_ComposeButtonsView';
  * @param {Function} oCompose.setHtmlTextMode Sets html text mode switched on.
  * @param {Function} oCompose.setHtmlText Sets html text to html editor.
  * @param {Function} oCompose.undoHtml Undo last changes in html editor.
- * 
+ *
  * @param oCompose.koTextChange Triggered on changing text in compose
- * 
+ *
  */
 CComposeButtonsView.prototype.assignComposeExtInterface = function (oCompose)
 {
@@ -70,7 +70,7 @@ CComposeButtonsView.prototype.doAfterPreparingMainTabParameters = function (oPar
 
 /**
  * Receives message properties that are displayed when opening the compose popup.
- * 
+ *
  * @param {Object} oMessageProps Receiving message properties.
  * @param {Boolean} oMessageProps.bDraft **true** if message was opened from drafts folder.
  * @param {Boolean} oMessageProps.bPlain **true** if opened for compose message if plain.
@@ -96,7 +96,8 @@ CComposeButtonsView.prototype.send = function ()
 			this.oCompose.getSubject(),
 			this.oCompose.getPlainText(),
 			this.oCompose.getRecipientEmails()[0] ? this.oCompose.getRecipientEmails()[0] : null,
-			this.oCompose.getFromEmail()
+			this.oCompose.getFromEmail(),
+			this.oCompose.getSelectedSender()
 		]);
 	}
 };

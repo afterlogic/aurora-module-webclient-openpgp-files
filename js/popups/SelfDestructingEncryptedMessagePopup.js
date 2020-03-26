@@ -28,6 +28,7 @@ function SelfDestructingEncryptedMessagePopup()
 	this.sPlainText = null;
 	this.sRecipientEmail = null;
 	this.sFromEmail = null;
+	this.sSelectedSenderId = null;
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.recipientAutocomplete = ko.observable('');
 	this.keyBasedEncryptionDisabled = ko.observable(true);
@@ -161,12 +162,13 @@ _.extendOwn(SelfDestructingEncryptedMessagePopup.prototype, CAbstractPopup.proto
 
 SelfDestructingEncryptedMessagePopup.prototype.PopupTemplate = '%ModuleName%_SelfDestructingEncryptedMessagePopup';
 
-SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, sRecipientEmail, sFromEmail)
+SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, sRecipientEmail, sFromEmail, sSelectedSenderId)
 {
 	this.sSubject = sSubject;
 	this.sPlainText = sPlainText;
 	this.sRecipientEmail = sRecipientEmail;
 	this.sFromEmail = sFromEmail;
+	this.sSelectedSenderId = sSelectedSenderId;
 	await OpenPgpEncryptor.initKeys();
 	this.keys(OpenPgpEncryptor.getKeys());
 	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
@@ -304,7 +306,8 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 						to: this.recipientAutocompleteItem().value,
 						subject: sSubject,
 						body: sEncryptedBody,
-						isHtml: false
+						isHtml: false,
+						selectedSenderId: this.sSelectedSenderId
 					});
 					this.cancelPopup();
 				}
@@ -333,7 +336,8 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 						to: this.recipientAutocompleteItem().value,
 						subject: sSubject,
 						body: sBody,
-						isHtml: true
+						isHtml: true,
+						selectedSenderId: this.sSelectedSenderId
 					});
 				}
 			}
@@ -341,7 +345,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 		else
 		{
 			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
-		}	
+		}
 	}
 	else
 	{
@@ -439,7 +443,7 @@ SelfDestructingEncryptedMessagePopup.prototype.createSelfDestrucPublicLink = asy
 		Ajax.send(
 			'OpenPgpFilesWebclient',
 			'CreateSelfDestrucPublicLink',
-			oParams, 
+			oParams,
 			fResponseCallback,
 			this
 		);
