@@ -3,7 +3,7 @@
 let
 	_ = require('underscore'),
 	ko = require('knockout'),
-	videojs = require('modules/%ModuleName%/js/vendors/video.min.js'),
+	videojs = require('video.js').default,
 
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
@@ -27,7 +27,7 @@ function CFileView()
 
 	this.aSupportedVideoExt = ['mp4'];
 	this.aSupportedAudioExt = ['mp3'];
-	
+
 	this.password = ko.observable('');
 	this.isDecryptionAvailable = ko.observable(false);
 	this.isDownloadingAndDecrypting = ko.observable(false);
@@ -136,7 +136,7 @@ CFileView.prototype.play = function ()
 			{
 				'Hash': this.hash,
 				'Password': this.password()
-			}, 
+			},
 			oResponse => {
 				if (oResponse.Result === true)
 				{
