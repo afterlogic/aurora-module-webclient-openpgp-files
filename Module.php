@@ -16,7 +16,7 @@ namespace Aurora\Modules\OpenPgpFilesWebclient;
  */
 class Module extends \Aurora\System\Module\AbstractWebclientModule
 {
-	const SUPPORTED_FILE_EXTENSIONS = ['gpg'];
+	const SUPPORTED_FILE_EXTENSIONS = ['gpg, url'];
 	private $aPublicFileData = null;
 
 	public function init() 
@@ -29,12 +29,19 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		);
 		$this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
 		$this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
+		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
 	}
 
 	private function isEncryptedFileType($sFileName)
 	{
 		return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), self::SUPPORTED_FILE_EXTENSIONS);
 	}
+
+	private function isUrlFileType($sFileName)
+	{
+		return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), ['url']);
+	}
+
 	/***** public functions might be called with web API *****/
 	/**
 	 * Obtains list of module settings for authenticated user.
@@ -194,6 +201,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			if ($bLinkOrFile || $bSelfDestructingEncryptedMessage)
 			{
 				$bIsEncyptedFile = isset($aData['Name']) ? $this->isEncryptedFileType($aData['Name']) : false;
+				$bIsUrlFile = isset($aData['Name']) ? $this->isUrlFileType($aData['Name']) : false;;
 				$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($aData['UserId']);
 				if ($oUser)
 				{
@@ -251,6 +259,28 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
 									}
+									else if ($bIsUrlFile)
+									{
+										$mFile = \Aurora\System\Api::GetModuleDecorator('Files')->getRawFileData($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name'], $aData['__hash__'], 'view');
+										if (\is_resource($mFile))
+										{
+											$mFile = \stream_get_contents($mFile);
+											$aUrlFileInfo = \Aurora\System\Utils::parseIniString($mFile);
+											if ($aUrlFileInfo && isset($aUrlFileInfo['URL']))
+											{
+												$sUrl = $aUrlFileInfo['URL'];
+												$sFileName = basename($sUrl);
+												$sFileExtension = \Aurora\System\Utils::GetFileExtension($sFileName);
+												if (\strtolower($sFileExtension) === 'm3u8')
+												{
+													$this->aPublicFileData['Url'] = $sUrl;
+													$this->aPublicFileData['Name'] =  $sUrl; #$aData['Name'];
+													$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
+													$this->aPublicFileData['IsUrlFile'] =  true;
+												}
+											}
+										}
+									}
 									else
 									{//encrypted link
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
@@ -301,6 +331,24 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 						'PublicLink'		=> '?/files-pub/' . $mMin['__hash__'] . '/list'
 					]);
 					$oItem->ExtendedProps = $aExtendedProps;
+				}
+			}
+		}
+	}
+
+	public function onCheckUrl($aArgs, &$mResult)
+	{
+		if (!empty($aArgs['Url']))
+		{
+			$sUrl = $aArgs['Url'];
+			if ($sUrl)
+			{
+				$sFileName = basename($sUrl);
+				$sFileExtension = \Aurora\System\Utils::GetFileExtension($sFileName);
+				if (\strtolower($sFileExtension) === 'm3u8')
+				{
+					$mResult['Name'] = $sFileName;
+					return true;
 				}
 			}
 		}

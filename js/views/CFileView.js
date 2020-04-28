@@ -25,7 +25,7 @@ function CFileView()
 {
 	CAbstractScreenView.call(this, '%ModuleName%');
 
-	this.aSupportedVideoExt = ['mp4'];
+	this.aSupportedVideoExt = ['mp4', 'url'];
 	this.aSupportedAudioExt = ['mp3'];
 
 	this.password = ko.observable('');
@@ -39,6 +39,7 @@ function CFileView()
 	this.encryptionMode = Settings.PublicFileData.PgpEncryptionMode ? Settings.PublicFileData.PgpEncryptionMode : '';
 	this.recipientEmail = Settings.PublicFileData.PgpEncryptionRecipientEmail ? Settings.PublicFileData.PgpEncryptionRecipientEmail : '';
 	this.bSecuredLink = !!Settings.PublicFileData.IsSecuredLink;
+	this.isUrlFile = Settings.PublicFileData.IsUrlFile ? Settings.PublicFileData.IsUrlFile : false;
 	this.bShowPlayButton = ko.observable(false);
 	this.bShowVideoPlayer = ko.observable(false);
 	this.bShowAudioPlayer = ko.observable(false);
@@ -79,8 +80,16 @@ CFileView.prototype.onShow = async function ()
 	this.isMedia(isVideo || isAudio);
 	if (!this.bSecuredLink)
 	{
-		let sSrc = UrlUtils.getAppPath() + this.fileUrl;
-		if (isVideo)
+		let sSrc = this.fileUrl;
+		if (!this.isUrlFile)
+		{
+			sSrc = UrlUtils.getAppPath() + sSrc;
+		}
+		if(this.isUrlFile)
+		{
+			this.showVideoStreamPlayer(sSrc);
+		}
+		else if (isVideo)
 		{
 			this.showVideoPlayer(sSrc);
 		}
@@ -176,6 +185,14 @@ CFileView.prototype.isFileAudio = function (sFileName)
 	let sExt = Utils.getFileExtension(sFileName);
 
 	return (-1 !== _.indexOf(this.aSupportedAudioExt, sExt.toLowerCase()));
+};
+
+CFileView.prototype.showVideoStreamPlayer = function (sSrc)
+{
+	let sType = 'application/x-mpegURL';
+	this.oPlayer = videojs('video-player');
+	this.oPlayer.src({type: sType, src: sSrc});
+	this.bShowVideoPlayer(true);
 };
 
 CFileView.prototype.showVideoPlayer = function (sSrc)
