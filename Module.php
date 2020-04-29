@@ -265,19 +265,19 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 										if (\is_resource($mFile))
 										{
 											$mFile = \stream_get_contents($mFile);
-											$aUrlFileInfo = \Aurora\System\Utils::parseIniString($mFile);
-											if ($aUrlFileInfo && isset($aUrlFileInfo['URL']))
+										}
+										$aUrlFileInfo = \Aurora\System\Utils::parseIniString($mFile);
+										if ($aUrlFileInfo && isset($aUrlFileInfo['URL']))
+										{
+											$sUrl = $aUrlFileInfo['URL'];
+											$sFileName = basename($sUrl);
+											$sFileExtension = \Aurora\System\Utils::GetFileExtension($sFileName);
+											if (\strtolower($sFileExtension) === 'm3u8')
 											{
-												$sUrl = $aUrlFileInfo['URL'];
-												$sFileName = basename($sUrl);
-												$sFileExtension = \Aurora\System\Utils::GetFileExtension($sFileName);
-												if (\strtolower($sFileExtension) === 'm3u8')
-												{
-													$this->aPublicFileData['Url'] = $sUrl;
-													$this->aPublicFileData['Name'] =  $sUrl; #$aData['Name'];
-													$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
-													$this->aPublicFileData['IsUrlFile'] =  true;
-												}
+												$this->aPublicFileData['Url'] = $sUrl;
+												$this->aPublicFileData['Name'] =  $sUrl; #$aData['Name'];
+												$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
+												$this->aPublicFileData['IsUrlFile'] =  true;
 											}
 										}
 									}
