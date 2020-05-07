@@ -76,8 +76,9 @@ CFileView.prototype.onShow = async function ()
 {
 	let isVideo = this.isFileVideo(this.fileName);
 	let isAudio = this.isFileAudio(this.fileName);
-	this.bShowPlayButton(this.bSecuredLink && (isVideo || isAudio));
-	this.isMedia(isVideo || isAudio);
+	this.isMedia(isVideo || isAudio || this.isUrlFile);
+	this.bShowPlayButton(this.bSecuredLink && this.isMedia());
+
 	if (!this.bSecuredLink)
 	{
 		let sSrc = this.fileUrl;
@@ -85,6 +86,7 @@ CFileView.prototype.onShow = async function ()
 		{
 			sSrc = UrlUtils.getAppPath() + sSrc;
 		}
+
 		if(this.isUrlFile)
 		{
 			this.showVideoStreamPlayer(sSrc);
@@ -97,7 +99,7 @@ CFileView.prototype.onShow = async function ()
 		{
 			this.showAudioPlayer(sSrc);
 		}
-}
+	}
 	if (this.encryptionMode === Enums.EncryptionBasedOn.Key)
 	{//if encryption is based on a key - checking if the key is available
 		await OpenPgpEncryptor.initKeys();
@@ -127,7 +129,14 @@ CFileView.prototype.securedLinkDownload = function ()
 	}
 	else
 	{
-		window.location.href = this.fileUrl + '/download/secure/' + encodeURIComponent(this.password());
+		if (this.isUrlFile)
+		{
+			window.location.href = this.fileUrl;
+		}
+		else
+		{
+			window.location.href = this.fileUrl + '/download/secure/' + encodeURIComponent(this.password());
+		}
 	}
 };
 
@@ -150,6 +159,7 @@ CFileView.prototype.play = function ()
 				if (oResponse.Result === true)
 				{
 					let sSrc = UrlUtils.getAppPath() + this.fileUrl + '/download/secure/' + encodeURIComponent(this.password());
+
 					if (this.isFileVideo(this.fileName))
 					{
 						this.showVideoPlayer(sSrc);
@@ -157,6 +167,10 @@ CFileView.prototype.play = function ()
 					else if (this.isFileAudio(this.fileName))
 					{
 						this.showAudioPlayer(sSrc);
+					}
+					else if (this.isUrlFile)
+					{
+						this.showVideoStreamPlayer(this.fileUrl);
 					}
 				}
 				else if (oResponse.Result === false)

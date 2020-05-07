@@ -275,7 +275,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 											if (\strtolower($sFileExtension) === 'm3u8')
 											{
 												$this->aPublicFileData['Url'] = $sUrl;
-												$this->aPublicFileData['Name'] =  $sUrl; #$aData['Name'];
+												$this->aPublicFileData['Name'] =  $sFileName; #$aData['Name'];
 												$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
 												$this->aPublicFileData['IsUrlFile'] =  true;
 											}
