@@ -178,7 +178,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
 	public function ValidatePublicLinkPassword($UserId, $Hash, $Password)
 	{
-		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
+		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 		$bResult = false;
 		$oMin = \Aurora\Modules\Min\Module::getInstance();
 		$mMin = $oMin->GetMinByHash($Hash);
