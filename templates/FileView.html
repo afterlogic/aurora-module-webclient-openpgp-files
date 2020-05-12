@@ -10,7 +10,7 @@
 	</div>
 	<div class="fields">
 		<div class="fieldset">
-			<div class="row" data-bind="visible: isDecryptionAvailable() || bSecuredLink">
+			<div class="row" data-bind="visible: koShowPassword">
 				<span class="label" data-bind="text: passwordLabel"></span>
 				<input autocomplete="new-password" type="password" class="value input" data-bind="value: password" />
 			</div>
@@ -39,16 +39,16 @@
 	</div>
 	<span class="buttons">
 		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : play,
-			visible: bShowPlayButton(),
+			visible: bShowPlayButton() && !bShowVideoPlayer() && !bShowAudioPlayer(),
 			css: {'disabled': isDownloadingAndDecrypting()},
 			i18n: {'key': '%MODULENAME%/ACTION_PLAY'} "></span>
 		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
 		</span>
-		<a class="button download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink"></a>
+		<a class="button download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink && !isUrlFile"></a>
 		<span class="button" data-bind="click: securedLinkDownload,
-			visible: bSecuredLink,
+			visible: bSecuredLink && !isUrlFile,
 			i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}">
 		</span>
 	</span>

@@ -43,6 +43,10 @@ function CFileView()
 	this.bShowPlayButton = ko.observable(false);
 	this.bShowVideoPlayer = ko.observable(false);
 	this.bShowAudioPlayer = ko.observable(false);
+	this.koShowPassword = ko.computed(function () {
+		return (this.isDecryptionAvailable() || this.bSecuredLink) && 
+				!this.bShowVideoPlayer() && !this.bShowAudioPlayer();
+	}, this);
 	this.isMedia = ko.observable(false);
 	if (this.bSecuredLink)
 	{
