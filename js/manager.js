@@ -7,7 +7,12 @@ function IsPgpSupported()
 	return !!(window.crypto && window.crypto.getRandomValues);
 }
 
-module.exports =  oAppData => {
+module.exports = oAppData => {
+	if (!IsPgpSupported())
+	{
+		return null;
+	}
+	
 	let
 		App = require('%PathToCoreWebclientModule%/js/App.js'),
 		Settings = require('modules/%ModuleName%/js/Settings.js'),
@@ -49,25 +54,22 @@ module.exports =  oAppData => {
 	{
 		return {
 			start: ModulesManager => {
-				if (IsPgpSupported())
-				{
-					ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
-					ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeButtonsView.js')]);
-					App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
-						const fParentHandler = oParams.View.onShareIconClick;
-						oParams.View.onShareIconClick = oItem => {
-							if (oItem && oItem instanceof CFileModel
-								&& oParams.View.storageType() === Enums.FileStorageType.Personal)
-							{
-								Popups.showPopup(SharePopup, [oItem]);
-							}
-							else
-							{
-								fParentHandler(oItem);
-							}
-						};
-					});
-				}
+				ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
+				ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeButtonsView.js')]);
+				App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
+					const fParentHandler = oParams.View.onShareIconClick;
+					oParams.View.onShareIconClick = oItem => {
+						if (oItem && oItem instanceof CFileModel
+							&& oParams.View.storageType() === Enums.FileStorageType.Personal)
+						{
+							Popups.showPopup(SharePopup, [oItem]);
+						}
+						else
+						{
+							fParentHandler(oItem);
+						}
+					};
+				});
 			}
 		};
 	}
