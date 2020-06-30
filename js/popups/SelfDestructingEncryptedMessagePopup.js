@@ -13,9 +13,9 @@ let
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js'),
-	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js')
+	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 /**
  * @constructor
@@ -169,7 +169,7 @@ SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject
 	this.sRecipientEmail = sRecipientEmail;
 	this.sFromEmail = sFromEmail;
 	this.sSelectedSenderId = sSelectedSenderId;
-	await OpenPgpEncryptor.initKeys();
+	await OpenPgpEncryptor.oPromiseInitialised;
 	this.keys(OpenPgpEncryptor.getKeys());
 	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
 	if (aPrivateKeys.length > 0)
@@ -242,13 +242,19 @@ SelfDestructingEncryptedMessagePopup.prototype.clearPopup = function ()
 SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 {
 	this.isEncrypting(true);
+	const aEmailForEncrypt = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], true).length > 0
+		? [this.recipientAutocompleteItem().email, this.sFromEmail]
+		: [this.recipientAutocompleteItem().email];
+	let aPublicKeys = OpenPgpEncryptor.findKeysByEmails(aEmailForEncrypt, true);
+	let aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
+
 	const OpenPgpResult = await OpenPgpEncryptor.encryptData(
 		this.sPlainText,
-		this.recipientAutocompleteItem().email,
+		aPublicKeys,
+		aPrivateKeys,
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
 		this.sign(),
-		this.passphraseEmail(),
-		this.sFromEmail
+		this.passphraseEmail()
 	);
 
 	if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
@@ -273,32 +279,29 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 
 			if (this.recipientAutocompleteItem().hasKey)
 			{//encrypt message with key
+				let sMessage = password
+					? '%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY_WITH_PASSWORD'
+					: '%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY';
+				let oOptions = {
+					'URL': sFullLink,
+					'BR': '\r\n',
+					'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
+					'HOURS': this.selectedLifetimeHrs(),
+					'CREATING_TIME_GMT': sCurrentTime
+				};
 				if (password)
 				{
-					sBody = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY_WITH_PASSWORD',
-						{
-							'URL': sFullLink,
-							'BR': '\r\n',
-							'PASSWORD': password,
-							'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
-							'HOURS': this.selectedLifetimeHrs(),
-							'CREATING_TIME_GMT': sCurrentTime
-						}
-					);
+					oOptions.PASSWORD = password;
 				}
-				else
-				{
-					sBody = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY',
-						{
-							'URL': sFullLink,
-							'BR': '\r\n',
-							'EMAIL': App.currentAccountEmail ? App.currentAccountEmail() : '',
-							'HOURS': this.selectedLifetimeHrs(),
-							'CREATING_TIME_GMT': sCurrentTime
-						}
-					);
-				}
-				const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail(), this.sFromEmail);
+				sBody = TextUtils.i18n(sMessage, oOptions);
+
+				const OpenPgpResult = await this.encryptMessage(
+					sBody,
+					this.recipientAutocompleteItem().email,
+					this.sign(),
+					this.passphraseEmail(),
+					this.sFromEmail
+				);
 				if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
 				{
 					const sEncryptedBody = OpenPgpResult.result;
@@ -319,7 +322,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 			else
 			{
 				//send not encrypted message
-				//if the recipient does not have a key, the message can only be encrypted with a password 
+				//if the recipient does not have a key, the message can only be encrypted with a password
 				if (password)
 				{
 					sBody = TextUtils.i18n('%MODULENAME%/SELF_DESTRUCT_LINK_MESSAGE_BODY_NOT_ENCRYPTED',
@@ -331,7 +334,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 							'CREATING_TIME_GMT': sCurrentTime
 						}
 					);
-					this.showPassword(password);
+					this.password(password);
 					this.composeMessageWithData({
 						to: this.recipientAutocompleteItem().value,
 						subject: sSubject,
@@ -339,6 +342,10 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 						isHtml: true,
 						selectedSenderId: this.sSelectedSenderId
 					});
+				}
+				else
+				{
+					Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 				}
 			}
 		}
@@ -360,9 +367,14 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
  */
 SelfDestructingEncryptedMessagePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
-	const fAutocompleteCallback = ModulesManager.run('ContactsWebclient',
+	const fAutocompleteCallback = ModulesManager.run(
+		'ContactsWebclient',
 		'getSuggestionsAutocompleteCallback',
-		['all', App.getUserPublicId(), /*bWithGroups*/ false]
+		[
+			'all',
+			App.getUserPublicId(),
+			/*bWithGroups*/ false
+		]
 	);
 	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
 		let aPublicKeysEmails = this.getPublicKeysEmails();
@@ -465,9 +477,37 @@ SelfDestructingEncryptedMessagePopup.prototype.createSelfDestrucPublicLink = asy
 	return oResult;
 };
 
-SelfDestructingEncryptedMessagePopup.prototype.showPassword = function (sPassword)
+/**
+ * @param {string} sMessage
+ * @param {string} aPrincipalsEmail
+ * @param {boolean} bSign
+ * @param {string} sPassphrase
+ * @param {string} sFromEmail
+ * @return {COpenPgpResult}
+ */
+SelfDestructingEncryptedMessagePopup.prototype.encryptMessage = async function (sMessage, sPrincipalsEmail, bSign, sPassphrase, sFromEmail)
 {
-	this.password(sPassword);
+	const aEmailForEncrypt = OpenPgpEncryptor.findKeysByEmails([sFromEmail], true).length > 0
+		? [sPrincipalsEmail, sFromEmail]
+		: [sPrincipalsEmail];
+	let aPublicKeys = OpenPgpEncryptor.findKeysByEmails(aEmailForEncrypt, true);
+	let aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sFromEmail], false);
+	let oEncryptionResult = await OpenPgpEncryptor.encryptData(
+		sMessage,
+		aPublicKeys,
+		aPrivateKeys,
+		/*bPasswordBasedEncryption*/false,
+		bSign,
+		sPassphrase
+	);
+
+	if (oEncryptionResult.result)
+	{
+		let {data, password} = oEncryptionResult.result;
+		oEncryptionResult.result = data;
+	}
+
+	return oEncryptionResult;
 };
 
 module.exports = new SelfDestructingEncryptedMessagePopup();
