@@ -4,15 +4,20 @@ var
 	_ = require('underscore'),
 	ko = require('knockout'),
 
-	App = require('%PathToCoreWebclientModule%/js/App.js'),
-	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
-	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
-	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
-	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
+	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
+
+	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
+	App = require('%PathToCoreWebclientModule%/js/App.js'),
+	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
+	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
+	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
+
+	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
+
 	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
-	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js')
+	ShowHistoryPopup = ModulesManager.run('ActivityHistory', 'getShowHistoryPopup')
 ;
 
 /**
@@ -92,6 +97,8 @@ function SharePopup()
 		}
 	});
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
+
+	this.bAllowShowHistory = !!ShowHistoryPopup;
 }
 
 _.extendOwn(SharePopup.prototype, CAbstractPopup.prototype);
@@ -316,5 +323,12 @@ SharePopup.prototype.sendEmail = async function ()
 		this.cancelPopup();
 	}
 };
+
+SharePopup.prototype.showHistory = function () {
+	if (this.bAllowShowHistory)
+	{
+		Popups.showPopup(ShowHistoryPopup, [TextUtils.i18n('%MODULENAME%/HEADING_HISTORY_POPUP'), this.item]);
+	}
+}
 
 module.exports = new SharePopup();
