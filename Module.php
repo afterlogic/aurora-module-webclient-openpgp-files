@@ -16,10 +16,9 @@ namespace Aurora\Modules\OpenPgpFilesWebclient;
  */
 class Module extends \Aurora\System\Module\AbstractWebclientModule
 {
-	const SUPPORTED_FILE_EXTENSIONS = ['gpg, url'];
 	private $aPublicFileData = null;
 
-	public function init() 
+	public function init()
 	{
 		\Aurora\Modules\Core\Classes\User::extend(
 			self::GetName(),
@@ -32,11 +31,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
 	}
 
-	private function isEncryptedFileType($sFileName)
-	{
-		return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), self::SUPPORTED_FILE_EXTENSIONS);
-	}
-
 	private function isUrlFileType($sFileName)
 	{
 		return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), ['url']);
@@ -45,7 +39,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 	/***** public functions might be called with web API *****/
 	/**
 	 * Obtains list of module settings for authenticated user.
-	 * 
+	 *
 	 * @return array
 	 */
 	public function GetSettings()
@@ -91,7 +85,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		return false;
 	}
 
-	public function CreatePublicLink($UserId, $Type, $Path, $Name, $Size, $IsFolder, $Password = '')
+	public function CreatePublicLink($UserId, $Type, $Path, $Name, $Size, $IsFolder, $Password = '', $RecipientEmail = '', $PgpEncryptionMode = '')
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = [];
@@ -118,6 +112,14 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				if (!empty($Password))
 				{
 					$aProps['Password'] = \Aurora\System\Utils::EncryptValue($Password);
+				}
+				if (!empty($RecipientEmail))
+				{
+					$aProps['RecipientEmail'] = $RecipientEmail;
+				}
+				if (!empty($PgpEncryptionMode))
+				{
+					$aProps['PgpEncryptionMode'] = $PgpEncryptionMode;
 				}
 				$sHash = $oMin->createMin(
 					$sID,
@@ -200,19 +202,19 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			$bSelfDestructingEncryptedMessage = isset($aData['Subject']) && isset($aData['Data']) && isset($aData['PgpEncryptionMode']) && isset($aData['RecipientEmail']);
 			if ($bLinkOrFile || $bSelfDestructingEncryptedMessage)
 			{
-				$bIsEncyptedFile = isset($aData['Name']) ? $this->isEncryptedFileType($aData['Name']) : false;
 				$bIsUrlFile = isset($aData['Name']) ? $this->isUrlFileType($aData['Name']) : false;;
 				$oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($aData['UserId']);
 				if ($oUser)
 				{
-					if ($bIsEncyptedFile)
-					{
-						$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
-						$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name']);
-						\Aurora\System\Api::skipCheckUserRole($bPrevState);
-						$bIsSetPgpEncryptionMode = $aFileInfo && isset($aFileInfo->ExtendedProps) && isset($aFileInfo->ExtendedProps['PgpEncryptionMode']);
-					}
+					$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
+					$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name']);
+					\Aurora\System\Api::skipCheckUserRole($bPrevState);
+					$bIsEncyptedFile = $aFileInfo
+						&& isset($aFileInfo->ExtendedProps)
+						&& isset($aFileInfo->ExtendedProps['ParanoidKeyPublic']);
+					$bIsSetPgpEncryptionMode = isset($aData['PgpEncryptionMode']);
 					$oApiIntegrator = \Aurora\System\Managers\Integrator::getInstance();
+
 					if ($oApiIntegrator
 						&& (($bIsEncyptedFile && $bIsSetPgpEncryptionMode)
 							|| !$bIsEncyptedFile)
@@ -230,10 +232,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 								{
 									@\header('X-Frame-Options: '.$sFrameOptions);
 								}
-
 								$aConfig = [
 									'public_app' => true,
-									'modules_list' => $oApiIntegrator->GetModulesForEntry('OpenPgpFilesWebclient')
+									'modules_list' => array_merge(
+										$oApiIntegrator->GetModulesForEntry('OpenPgpFilesWebclient'),
+										$oApiIntegrator->GetModulesForEntry('OpenPgpWebclient')
+									)
 								];
 								//passing data to AppData throughGetSettings. GetSettings will be called in $oApiIntegrator->buildBody
 								$oFilesWebclientModule = \Aurora\System\Api::GetModule('FilesWebclient');
@@ -254,10 +258,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 									}
 									else if ($bIsEncyptedFile)
 									{
-										$this->aPublicFileData['PgpEncryptionMode'] = $aFileInfo->ExtendedProps['PgpEncryptionMode'];
-										$this->aPublicFileData['PgpEncryptionRecipientEmail'] = $aFileInfo->ExtendedProps['PgpEncryptionRecipientEmail'];
+										$this->aPublicFileData['PgpEncryptionMode'] = $aData['PgpEncryptionMode'];
+										$this->aPublicFileData['PgpEncryptionRecipientEmail'] = $aData['RecipientEmail'];
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
+										$this->aPublicFileData['ParanoidKeyPublic'] = $aFileInfo->ExtendedProps['ParanoidKeyPublic'];
+										$this->aPublicFileData['InitializationVector'] = $aFileInfo->ExtendedProps['InitializationVector'];
 									}
 									else if ($bIsUrlFile)
 									{

@@ -11,8 +11,8 @@ let
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
-	Settings = require('modules/%ModuleName%/js/Settings.js')
+	Settings = require('modules/%ModuleName%/js/Settings.js'),
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 /**
  * @constructor
@@ -145,7 +145,7 @@ EncryptFilePopup.prototype.onOpen = async function (oFile, oFilesView)
 {
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
-	await OpenPgpEncryptor.initKeys();
+	await OpenPgpEncryptor.oPromiseInitialised;
 	this.keys(OpenPgpEncryptor.getKeys());
 	this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
 	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sUserEmail], false);

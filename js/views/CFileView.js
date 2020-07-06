@@ -5,6 +5,7 @@ let
 	ko = require('knockout'),
 	videojs = require('video.js').default,
 
+	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	UrlUtils = require('%PathToCoreWebclientModule%/js/utils/Url.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
@@ -14,7 +15,7 @@ let
 
 	CAbstractScreenView = require('%PathToCoreWebclientModule%/js/views/CAbstractScreenView.js'),
 	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 
 require('modules/%ModuleName%/styles/vendors/video-js.css');
@@ -40,11 +41,13 @@ function CFileView()
 	this.recipientEmail = Settings.PublicFileData.PgpEncryptionRecipientEmail ? Settings.PublicFileData.PgpEncryptionRecipientEmail : '';
 	this.bSecuredLink = !!Settings.PublicFileData.IsSecuredLink;
 	this.isUrlFile = Settings.PublicFileData.IsUrlFile ? Settings.PublicFileData.IsUrlFile : false;
+	this.sParanoidKeyPublic = Settings.PublicFileData.ParanoidKeyPublic? Settings.PublicFileData.ParanoidKeyPublic : '';
+	this.sInitializationVector = Settings.PublicFileData.InitializationVector? Settings.PublicFileData.InitializationVector : '';
 	this.bShowPlayButton = ko.observable(false);
 	this.bShowVideoPlayer = ko.observable(false);
 	this.bShowAudioPlayer = ko.observable(false);
 	this.koShowPassword = ko.computed(function () {
-		return (this.isDecryptionAvailable() || this.bSecuredLink) && 
+		return (this.isDecryptionAvailable() || this.bSecuredLink) &&
 				!this.bShowVideoPlayer() && !this.bShowAudioPlayer();
 	}, this);
 	this.isMedia = ko.observable(false);
@@ -106,7 +109,7 @@ CFileView.prototype.onShow = async function ()
 	}
 	if (this.encryptionMode === Enums.EncryptionBasedOn.Key)
 	{//if encryption is based on a key - checking if the key is available
-		await OpenPgpEncryptor.initKeys();
+		await OpenPgpEncryptor.oPromiseInitialised;
 		this.isDecryptionAvailable(!OpenPgpEncryptor.findKeysByEmails([this.recipientEmail], false).length <= 0);
 	}
 };
@@ -120,7 +123,15 @@ CFileView.prototype.downloadAndDecryptFile = async function ()
 	else
 	{
 		this.isDownloadingAndDecrypting(true);
-		await OpenPgpFileProcessor.processFileDecryption(this.fileName, this.fileUrl, this.recipientEmail, this.password(), this.encryptionMode);
+		await OpenPgpFileProcessor.processFileDecryption(
+			this.fileName,
+			this.fileUrl,
+			this.recipientEmail,
+			this.password(),
+			this.encryptionMode,
+			this.sParanoidKeyPublic,
+			this.sInitializationVector
+		);
 		this.isDownloadingAndDecrypting(false);
 	}
 };

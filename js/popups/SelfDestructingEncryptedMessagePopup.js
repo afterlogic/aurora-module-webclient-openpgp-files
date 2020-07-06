@@ -295,7 +295,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 				}
 				sBody = TextUtils.i18n(sMessage, oOptions);
 
-				const OpenPgpResult = await this.encryptMessage(
+				const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(
 					sBody,
 					this.recipientAutocompleteItem().email,
 					this.sign(),
@@ -475,39 +475,6 @@ SelfDestructingEncryptedMessagePopup.prototype.createSelfDestrucPublicLink = asy
 	}
 
 	return oResult;
-};
-
-/**
- * @param {string} sMessage
- * @param {string} aPrincipalsEmail
- * @param {boolean} bSign
- * @param {string} sPassphrase
- * @param {string} sFromEmail
- * @return {COpenPgpResult}
- */
-SelfDestructingEncryptedMessagePopup.prototype.encryptMessage = async function (sMessage, sPrincipalsEmail, bSign, sPassphrase, sFromEmail)
-{
-	const aEmailForEncrypt = OpenPgpEncryptor.findKeysByEmails([sFromEmail], true).length > 0
-		? [sPrincipalsEmail, sFromEmail]
-		: [sPrincipalsEmail];
-	let aPublicKeys = OpenPgpEncryptor.findKeysByEmails(aEmailForEncrypt, true);
-	let aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([sFromEmail], false);
-	let oEncryptionResult = await OpenPgpEncryptor.encryptData(
-		sMessage,
-		aPublicKeys,
-		aPrivateKeys,
-		/*bPasswordBasedEncryption*/false,
-		bSign,
-		sPassphrase
-	);
-
-	if (oEncryptionResult.result)
-	{
-		let {data, password} = oEncryptionResult.result;
-		oEncryptionResult.result = data;
-	}
-
-	return oEncryptionResult;
 };
 
 module.exports = new SelfDestructingEncryptedMessagePopup();

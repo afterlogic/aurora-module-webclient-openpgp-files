@@ -1,6 +1,6 @@
 'use strict';
 
-var
+let
 	_ = require('underscore'),
 	ko = require('knockout'),
 
@@ -16,8 +16,8 @@ var
 
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js'),
-	ShowHistoryPopup = ModulesManager.run('ActivityHistory', 'getShowHistoryPopup')
+	ShowHistoryPopup = ModulesManager.run('ActivityHistory', 'getShowHistoryPopup'),
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 
 /**
@@ -131,7 +131,7 @@ SharePopup.prototype.onOpen = async function (oItem)
 		{
 			this.linkLabel(TextUtils.i18n('%MODULENAME%/LABEL_PUBLIC_LINK'));
 		}
-		await OpenPgpEncryptor.initKeys();
+		await OpenPgpEncryptor.oPromiseInitialised;
 		this.keys(OpenPgpEncryptor.getKeys());
 		this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
 		const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sUserEmail], false);
@@ -314,12 +314,12 @@ SharePopup.prototype.sendEmail = async function ()
 	else
 	{//message is not encrypted
 		const sBody = TextUtils.i18n('%MODULENAME%/LINK_MESSAGE_BODY', {'URL': this.publicLink()});
-			this.composeMessageWithData({
-				to: this.recipientAutocompleteItem().value,
-				subject: sSubject,
-				body: sBody,
-				isHtml: true
-			});
+		this.composeMessageWithData({
+			to: this.recipientAutocompleteItem().value,
+			subject: sSubject,
+			body: sBody,
+			isHtml: true
+		});
 		this.cancelPopup();
 	}
 };

@@ -12,12 +12,11 @@ module.exports = oAppData => {
 	{
 		return null;
 	}
-	
+
 	let
 		App = require('%PathToCoreWebclientModule%/js/App.js'),
 		Settings = require('modules/%ModuleName%/js/Settings.js'),
 		Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
-		SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
 		CFileModel = require('modules/FilesWebclient/js/models/CFileModel.js'),
 		oButtonsView = null
 	;
@@ -54,13 +53,16 @@ module.exports = oAppData => {
 	{
 		return {
 			start: ModulesManager => {
+				let SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js');
 				ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
 				ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeButtonsView.js')]);
 				App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
 					const fParentHandler = oParams.View.onShareIconClick;
 					oParams.View.onShareIconClick = oItem => {
 						if (oItem && oItem instanceof CFileModel
-							&& oParams.View.storageType() === Enums.FileStorageType.Personal)
+							&& (oParams.View.storageType() === Enums.FileStorageType.Personal
+								|| oParams.View.storageType() === Enums.FileStorageType.Encrypted)
+						)
 						{
 							Popups.showPopup(SharePopup, [oItem]);
 						}
