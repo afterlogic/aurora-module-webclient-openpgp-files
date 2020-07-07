@@ -207,7 +207,16 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				if ($oUser)
 				{
 					$bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
+
+					$aCurSession = \Aurora\System\Api::GetUserSession();
+					\Aurora\System\Api::SetUserSession([
+						'UserId' => $oUser->EntityId
+					]);
+
 					$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name']);
+
+					\Aurora\System\Api::SetUserSession($aCurSession);
+
 					\Aurora\System\Api::skipCheckUserRole($bPrevState);
 					$bIsEncyptedFile = $aFileInfo
 						&& isset($aFileInfo->ExtendedProps)
