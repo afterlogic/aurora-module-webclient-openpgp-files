@@ -21,6 +21,25 @@ function CreatePublicLinkPopup()
 	this.oFilesView = null;
 	this.encryptPublicLink = ko.observable(false);
 	this.isCreatingPublicLink = ko.observable(false);
+	this.selectedLifetimeHrs = ko.observable(null);
+	this.lifetime = ko.observableArray([
+		{
+			label: TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_ETERNAL'),
+			value: 0
+		},
+		{
+			label: "24 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_HOURS'),
+			value: 24
+		},
+		{
+			label: "72 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_HOURS'),
+			value: 72
+		},
+		{
+			label: "7 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_DAYS'),
+			value: 7 * 24
+		}
+	]);
 }
 
 _.extendOwn(CreatePublicLinkPopup.prototype, CAbstractPopup.prototype);
@@ -31,6 +50,7 @@ CreatePublicLinkPopup.prototype.onOpen = function (oFile, oFilesView)
 {
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
+	this.selectedLifetimeHrs(0);
 };
 
 CreatePublicLinkPopup.prototype.cancelPopup = function ()
@@ -54,7 +74,10 @@ CreatePublicLinkPopup.prototype.createPublicLink = async function ()
 		this.oFile.path(),
 		this.oFile.fileName(),
 		this.oFile.size(),
-		this.encryptPublicLink()
+		this.encryptPublicLink(),
+		'',
+		'',
+		this.selectedLifetimeHrs()
 	);
 	this.isCreatingPublicLink(false);
 	if (oPublicLinkResult.result && oPublicLinkResult.link)

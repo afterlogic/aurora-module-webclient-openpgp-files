@@ -160,7 +160,8 @@ OpenPgpFileProcessor.prototype.decryptFile = async function (oBlob, sRecipientEm
 	}
 };
 
-OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, sFileName, iSize, bEncryptLink = false, sRecipientEmail = '', sPgpEncryptionMode = '')
+OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, sFileName, iSize, bEncryptLink = false, 
+	sRecipientEmail = '', sPgpEncryptionMode = '', iLifetimeHrs = 0)
 {
 	let sLink = '';
 	let oResult = {result: false};
@@ -183,7 +184,8 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 			'IsFolder': false,
 			'Password': sPassword,
 			'RecipientEmail': sRecipientEmail,
-			'PgpEncryptionMode': sPgpEncryptionMode
+			'PgpEncryptionMode': sPgpEncryptionMode,
+			'LifetimeHrs': iLifetimeHrs
 		};
 
 		Ajax.send(

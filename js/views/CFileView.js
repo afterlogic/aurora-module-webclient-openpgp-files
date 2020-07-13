@@ -3,6 +3,7 @@
 let
 	_ = require('underscore'),
 	ko = require('knockout'),
+	moment = require('moment'),
 	videojs = require('video.js').default,
 
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
@@ -28,6 +29,8 @@ function CFileView()
 
 	this.aSupportedVideoExt = ['mp4', 'url'];
 	this.aSupportedAudioExt = ['mp3'];
+	this.ExpireDate = Settings.PublicFileData.ExpireDate ? moment.unix(Settings.PublicFileData.ExpireDate).format("YYYY-MM-DD HH:mm:ss") : '';
+	this.ExpireDateMessage = Settings.PublicFileData.ExpireDate ? TextUtils.i18n('%MODULENAME%/HINT_MESSAGE_LIFETIME', {'DATETIME': this.ExpireDate}) : null;
 
 	this.password = ko.observable('');
 	this.isDecryptionAvailable = ko.observable(false);

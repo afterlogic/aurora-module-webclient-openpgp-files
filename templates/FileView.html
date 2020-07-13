@@ -1,4 +1,11 @@
 <div class="sharing_panel large" data-bind="css: {'media': isMedia()}">
+	<div class="fields" data-bind="if: ExpireDateMessage">
+		<div class="fieldset">
+			<div class="row">
+				<span data-bind="text: ExpireDateMessage"></span>
+			</div>
+		</div>
+	</div>
 	<div class="item file">
 		<div class="item_content">
 			<span class="data">

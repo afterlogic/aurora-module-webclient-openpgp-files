@@ -16,6 +16,12 @@
 						<label for="EncryptPublicLink" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPT_PUBLIC_LINK'}"></label>
 					</span>
 				</div>
+				<div class="row" data-bind="visible: encryptPublicLink">
+					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_MESSAGE_LIFETIME'}"></span>
+					<span class="value">
+						<select class="value input" style="width: auto" data-bind="options: lifetime, optionsText: 'label', optionsValue: 'value', value: selectedLifetimeHrs "></select>
+					</span>
+				</div>
 			</div>
 			<div class="buttons">
 				<span class="button" data-bind="click: isCreatingPublicLink() ? false : createPublicLink, css: {'disabled': isCreatingPublicLink()}">

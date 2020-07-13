@@ -85,7 +85,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		return false;
 	}
 
-	public function CreatePublicLink($UserId, $Type, $Path, $Name, $Size, $IsFolder, $Password = '', $RecipientEmail = '', $PgpEncryptionMode = '')
+	public function CreatePublicLink($UserId, $Type, $Path, $Name, $Size, $IsFolder, $Password = '', $RecipientEmail = '', $PgpEncryptionMode = '', $LifetimeHrs = 0)
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = [];
@@ -121,11 +121,24 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				{
 					$aProps['PgpEncryptionMode'] = $PgpEncryptionMode;
 				}
-				$sHash = $oMin->createMin(
-					$sID,
-					$aProps,
-					$oUser->EntityId
-				);
+				if ($LifetimeHrs === 0)
+				{
+					$sHash = $oMin->createMin(
+						$sID,
+						$aProps,
+						$oUser->EntityId
+					);
+				}
+				else
+				{
+					$iExpireDate = time() + ((int) $LifetimeHrs * 60 * 60);
+					$sHash = $oMin->createMin(
+						$sID,
+						$aProps,
+						$oUser->EntityId,
+						$iExpireDate
+					);
+				}
 				$mMin = $oMin->GetMinByHash($sHash);
 				if (!empty($mMin['__hash__']))
 				{
@@ -301,6 +314,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
 										$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
+										$this->aPublicFileData['ExpireDate'] = isset($aData['expire_date']) ? $aData['expire_date'] : null;
 									}
 									$mResult = \strtr(
 										$sResult,
