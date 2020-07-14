@@ -24,26 +24,23 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
-			if (oFilesView.storageType() === Enums.FileStorageType.Encrypted)
+			if (selectedItem().published())
+			{
+				Popups.showPopup(SharePopup, [selectedItem()]);
+			}
+			else if (selectedItem()?.oExtendedProps?.InitializationVector)
 			{
 				Popups.showPopup(EncryptFilePopup, [
 					selectedItem(),
 					oFilesView
 				]);
 			}
-			else if (oFilesView.storageType() === Enums.FileStorageType.Personal)
+			else
 			{
-				if (selectedItem().published())
-				{
-					Popups.showPopup(SharePopup, [selectedItem()]);
-				}
-				else
-				{
-					Popups.showPopup(CreatePublicLinkPopup, [
-						selectedItem(),
-						oFilesView
-					]);
-				}
+				Popups.showPopup(CreatePublicLinkPopup, [
+					selectedItem(),
+					oFilesView
+				]);
 			}
 		},
 		() => {//button is active only when one file is selected
