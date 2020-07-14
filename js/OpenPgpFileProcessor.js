@@ -182,11 +182,14 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 			'Name': sFileName,
 			'Size': iSize,
 			'IsFolder': false,
-			'Password': sPassword,
 			'RecipientEmail': sRecipientEmail,
 			'PgpEncryptionMode': sPgpEncryptionMode,
 			'LifetimeHrs': iLifetimeHrs
 		};
+		if (bEncryptLink)
+		{
+			oParams.Password = sPassword;
+		}
 
 		Ajax.send(
 			'OpenPgpFilesWebclient',
