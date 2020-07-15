@@ -32,7 +32,8 @@ function CSelfDestructingEncryptedMessageView()
 	this.encryptionMode = Settings.PublicFileData.PgpEncryptionMode ? Settings.PublicFileData.PgpEncryptionMode : '';
 	this.recipientEmail = Settings.PublicFileData.RecipientEmail ? Settings.PublicFileData.RecipientEmail : '';
 	this.ExpireDate = Settings.PublicFileData.ExpireDate ? moment.unix(Settings.PublicFileData.ExpireDate).format("YYYY-MM-DD HH:mm:ss") : '';
-	this.ExpireDateMessage = TextUtils.i18n('%MODULENAME%/HINT_MESSAGE_LIFETIME', {'DATETIME': this.ExpireDate});
+	this.ExpireDateMessage = TextUtils.i18n('%MODULENAME%/HINT_MESSAGE_LIFETIME', { 'DATETIME': this.ExpireDate });
+	this.EerrorNoKeyMessage = TextUtils.i18n('%MODULENAME%/ERROR_NO_KEY', { 'SYSNAME': Settings.ProductName });
 	this.isDecryptedSuccessfully = ko.observable(false);
 	this.isShowNoKeyErrorMessage = ko.observable(false);
 	switch (this.encryptionMode)

@@ -7,7 +7,7 @@
 					<input autocomplete="new-password" type="password" class="value input" data-bind="value: enteredPassword" />
 				</div>
 				<div class="row" data-bind="visible: !isDecryptionAvailable() && isShowNoKeyErrorMessage()">
-					<span class="label" data-bind="i18n: {'key':  '%MODULENAME%/ERROR_NO_KEY'}"></span>
+					<span class="label" data-bind="text: EerrorNoKeyMessage"></span>
 				</div>
 			</div>
 		</div>
