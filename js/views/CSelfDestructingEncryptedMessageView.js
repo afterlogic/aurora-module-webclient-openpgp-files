@@ -5,13 +5,14 @@ let
 	ko = require('knockout'),
 	moment = require('moment'),
 
+	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	ErrorsUtils = require('modules/%ModuleName%/js/utils/Errors.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js'),
 
 	CAbstractScreenView = require('%PathToCoreWebclientModule%/js/views/CAbstractScreenView.js'),
-	OpenPgpEncryptor = require('modules/%ModuleName%/js/OpenPgpEncryptor.js')
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 
 /**
@@ -59,7 +60,7 @@ CSelfDestructingEncryptedMessageView.prototype.onShow = async function ()
 {
 	if (this.encryptionMode === Enums.EncryptionBasedOn.Key)
 	{//if encryption is based on a key - checking if the key is available
-		await OpenPgpEncryptor.initKeys();
+		await OpenPgpEncryptor.oPromiseInitialised;
 		this.isDecryptionAvailable(!OpenPgpEncryptor.findKeysByEmails([this.recipientEmail], false).length <= 0);
 		//show error message if user has no key
 		this.isShowNoKeyErrorMessage(!this.isDecryptionAvailable());
@@ -75,14 +76,25 @@ CSelfDestructingEncryptedMessageView.prototype.decryptMessage = async function (
 	else
 	{
 		this.isDecrypting(true);
-		let oDecryptionResult = await OpenPgpEncryptor.decryptData(this.data, this.recipientEmail, this.enteredPassword(), this.encryptionMode === Enums.EncryptionBasedOn.Password);
+		let oDecryptionResult = await OpenPgpEncryptor.decryptData(
+			this.data,
+			this.enteredPassword(),
+			this.encryptionMode === Enums.EncryptionBasedOn.Password
+		);
 		this.isDecrypting(false);
-		if (!oDecryptionResult.result)
+		if (
+			!oDecryptionResult.result
+			|| oDecryptionResult.hasErrors()
+		)
 		{
 			ErrorsUtils.showPgpErrorByCode(oDecryptionResult, Enums.PgpAction.DecryptVerify);
 		}
 		else
 		{
+			if (oDecryptionResult.hasNotices())
+			{
+				ErrorsUtils.showPgpErrorByCode(oDecryptionResult, Enums.PgpAction.DecryptVerify);
+			}
 			this.message(oDecryptionResult.result);
 			this.isDecryptedSuccessfully(true);
 		}
