@@ -40,45 +40,64 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 		{
 			const sKey = oPGPDecryptionResult.result;
 			//encrypt Paranoid key
-			let aPublicKeys = sRecipientEmail && !bIsPasswordMode ?
+			const aPublicKeys = sRecipientEmail && !bIsPasswordMode ?
 				OpenPgpEncryptor.findKeysByEmails([sRecipientEmail], /*bIsPublic*/true)
 				: [];
-			const { data: sEncryptedKey, password: sPassword } = await OpenPgpEncryptor.encryptAndSignWithCurrentPrivateKey(
+			const oPrivateKey = bSign ? await OpenPgpEncryptor.getCurrentUserPrivateKey() : null;
+			const oPGPEncryptionResult = await OpenPgpEncryptor.encryptData(
 				sKey,
 				aPublicKeys,
-				sPassphrase,
-				bIsPasswordMode
+				[oPrivateKey],
+				bIsPasswordMode,
+				bSign,
+				sPassphrase
 			);
-			if (sEncryptedKey)
+			if (
+				!oPGPEncryptionResult.result
+				|| oPGPEncryptionResult.hasErrors()
+				|| oPGPEncryptionResult.hasNotices()
+			)
 			{
-				//Update ParanoidKeyPublic
-				const bUpdateExtendedProps = await this.updateFileExtendedProps(
-					oFile,
-					{ ParanoidKeyPublic: sEncryptedKey }
+				ErrorsUtils.showPgpErrorByCode(
+					oPGPEncryptionResult,
+					Enums.PgpAction.Encrypt
 				);
-				if (bUpdateExtendedProps)
+			}
+			else
+			{
+
+				const { data: sEncryptedKey, password: sPassword } = oPGPEncryptionResult.result;
+				if (sEncryptedKey)
 				{
-					//creating a public link
-					let oPublicLinkResult = await this.createPublicLink(
-						oFile.storageType(),
-						oFile.path(),
-						oFile.fileName(),
-						oFile.size(),
-						false,
-						sRecipientEmail,
-						bIsPasswordMode ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key
+					//Update ParanoidKeyPublic
+					const bUpdateExtendedProps = await this.updateFileExtendedProps(
+						oFile,
+						{ ParanoidKeyPublic: sEncryptedKey }
 					);
-					if (oPublicLinkResult.result)
+					if (bUpdateExtendedProps)
 					{
-						oFilesView.refresh();
-						oResultData.result = true;
-						oResultData.password = sPassword;
-						oResultData.link = oPublicLinkResult.link;
+						//creating a public link
+						let oPublicLinkResult = await this.createPublicLink(
+							oFile.storageType(),
+							oFile.path(),
+							oFile.fileName(),
+							oFile.size(),
+							false,
+							sRecipientEmail,
+							bIsPasswordMode ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key
+						);
+						if (oPublicLinkResult.result)
+						{
+							oFilesView.refresh();
+							oResultData.result = true;
+							oResultData.password = sPassword;
+							oResultData.link = oPublicLinkResult.link;
+						}
 					}
-				}
-				else
-				{
-					Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_UPDATING_KEY'));
+					else
+					{
+						Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_UPDATING_KEY'));
+					}
 				}
 			}
 		}
