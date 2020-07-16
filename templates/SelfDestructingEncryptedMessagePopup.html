@@ -63,16 +63,6 @@
 							</label>
 							<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}, style: { 'display': 'inline-block', 'margin': '5px 0'}" for="openpgp-sign"></label>
 							<input name="fake_input_for_autocomplete" type="text" class="value input" style="display: none;" />
-							<span class="label pgp_password" 
-								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
-									style: { 'width': '100px', 'margin-left': '0'},
-									visible: sign()">
-							</span>
-							<input autocomplete="new-password" type="password" class="value input" 
-								data-bind="value: passphraseEmail,
-									style: { 'width': '200px'},
-									disable: !sign() || !isSigningAvailable() || isEncrypting(),
-									visible: sign()" />
 						</div>
 					</div>
 					<div class="row">
