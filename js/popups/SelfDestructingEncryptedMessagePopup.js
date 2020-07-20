@@ -397,7 +397,10 @@ SelfDestructingEncryptedMessagePopup.prototype.autocompleteCallback = function (
 			}
 		});
 		aPublicKeysEmails.forEach(sPublicKey => {
-			let aKeys = OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey);
+			let
+				bMatchesSearch = this.recipientAutocomplete() === '' || sPublicKey.indexOf(this.recipientAutocomplete()) !== -1,
+				aKeys = bMatchesSearch ? OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey) : null
+			;
 			if (aKeys && aKeys[0])
 			{
 				aRecipienstList.push(
