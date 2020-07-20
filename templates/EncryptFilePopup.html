@@ -7,7 +7,7 @@
 		</div>
 		<div class="fields encrypt-popup">
 			<div class="fieldset">
-				<div class="row" style="display: flex; align-items: center;">
+				<div class="row" style="display: flex; align-items: center;" data-bind="visible: !isSuccessfullyEncryptedAndUploaded() || recipientAutocompleteItem()">
 					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_RECIPIENT'}, style: {'vertical-align': 'middle'}"></span>
 					<span class="input select-recipient">
 						<input id="select_recipient_input" class="value" spellcheck="false" type="text" autocomplete="on"
@@ -27,17 +27,17 @@
 					<div class="row">
 						<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPTION_TYPE'}"></span>
 						<span class="value">
-							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Key, 'disabled': keyBasedEncryptionDisabled}">
+							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Key, 'disabled': keyBasedEncryptionDisabled() || isEncrypting()}">
 								<span class="icon"></span>
-								<input type="radio" id="tab_key" data-bind="checked: keyBasedEncryptionDisabled() ? false : encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Key}" />
+								<input type="radio" id="tab_key" data-bind="checked: encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Key, 'disabled': keyBasedEncryptionDisabled() || isEncrypting()}" />
 							</label>
-							<label for="tab_key" data-bind="i18n: {'key': '%MODULENAME%/LABEL_KEY_BASED_ENCRYPTION'}, css: {'hint': keyBasedEncryptionDisabled}"></label>
+							<label for="tab_key" data-bind="i18n: {'key': '%MODULENAME%/LABEL_KEY_BASED_ENCRYPTION'}, css: {'hint': keyBasedEncryptionDisabled() || isEncrypting()}"></label>
 
-							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Password, 'disabled': passwordBasedEncryptionDisabled}">
+							<label class="custom_radio pgp-encrypt-radio" data-bind="css: {'checked': encryptionBasedMode() === Enums.EncryptionBasedOn.Password, 'disabled': isEncrypting}">
 								<span class="icon"></span>
-								<input type="radio" id="tab_password" data-bind="checked: passwordBasedEncryptionDisabled() ? false : encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Password}" />
+								<input type="radio" id="tab_password" data-bind="checked: encryptionBasedMode, attr: {'value': Enums.EncryptionBasedOn.Password, 'disabled': isEncrypting}" />
 							</label>
-							<label for="tab_password" data-bind="i18n: {'key': '%MODULENAME%/LABEL_PASSWORD_BASED_ENCRYPTION'}, css: {'hint': passwordBasedEncryptionDisabled}"></label>
+							<label for="tab_password" data-bind="i18n: {'key': '%MODULENAME%/LABEL_PASSWORD_BASED_ENCRYPTION'}, css: {'hint': isEncrypting}"></label>
 						</span>
 					</div>
 					<br>
@@ -83,13 +83,13 @@
 			</div>
 			<div class="buttons">
 				<span class="button" data-bind="click: isEncrypting() ? false: encrypt,
-					visible: encryptionAvailable() && !isSuccessfullyEncryptedAndUploaded(),
+					visible: !isSuccessfullyEncryptedAndUploaded(),
 					css: {'disabled': isEncrypting()}"
 				>
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ENCRYPT'}, visible: !isEncrypting()"></span>
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_ENCRYPT_IN_PROGRESS'}, visible: isEncrypting()"></span>
 				</span>
-				<span class="button" data-bind="click: sendEmail, visible: isSuccessfullyEncryptedAndUploaded(), text: sendButtonText"></span>
+				<span class="button" data-bind="click: sendEmail, visible: isSuccessfullyEncryptedAndUploaded() && recipientAutocompleteItem(), text: sendButtonText"></span>
 				<span class="button secondary_button" data-bind="text: cancelButtonText, click: isEncrypting() ? false: cancelPopup, css: {'disabled': isEncrypting()}"></span>
 			</div>
 		</div>

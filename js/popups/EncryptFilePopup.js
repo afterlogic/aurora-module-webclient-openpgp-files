@@ -26,12 +26,10 @@ function EncryptFilePopup()
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.recipientAutocomplete = ko.observable('');
 	this.keyBasedEncryptionDisabled = ko.observable(true);
-	this.passwordBasedEncryptionDisabled = ko.observable(true);
-	this.encryptionAvailable = ko.observable(false);
 	this.isSuccessfullyEncryptedAndUploaded = ko.observable(false);
 	this.keys = ko.observableArray([]);
-	this.encryptionBasedMode = ko.observable('');
-	this.recipientHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
+	this.encryptionBasedMode = ko.observable(Enums.EncryptionBasedOn.Password);
+	this.recipientHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_ONLY_PASSWORD_BASED'));
 	this.encryptionModeHintText = ko.observable('');
 	this.isEncrypting = ko.observable(false);
 	this.encryptedFileLink = ko.observable('');
@@ -61,10 +59,8 @@ function EncryptFilePopup()
 	this.recipientAutocompleteItem.subscribe(oItem => {
 		if (oItem)
 		{
-			//password-based encryption is available after selecting the recipient
-			this.passwordBasedEncryptionDisabled(false);
+			this.recipientAutocomplete(oItem.value);
 			this.encryptionBasedMode(Enums.EncryptionBasedOn.Password);
-			this.encryptionAvailable(true);
 			if (oItem.hasKey)
 			{
 				//key-based encryption available if we have recipients public key
@@ -80,10 +76,8 @@ function EncryptFilePopup()
 		else
 		{
 			this.keyBasedEncryptionDisabled(true);
-			this.passwordBasedEncryptionDisabled(true);
-			this.encryptionAvailable(false);
-			this.encryptionBasedMode('');
-			this.recipientHintText(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
+			this.encryptionBasedMode(Enums.EncryptionBasedOn.Password);
+			this.recipientHintText(TextUtils.i18n('%MODULENAME%/HINT_ONLY_PASSWORD_BASED'));
 		}
 	}, this);
 	this.encryptionBasedMode.subscribe(oItem => {
@@ -120,19 +114,6 @@ function EncryptFilePopup()
 		{
 			this.signFileHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
 			this.signEmailHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
-		}
-	});
-	this.isEncrypting.subscribe(bEncrypting => {
-		//UI elements become disabled when encryption started
-		if (bEncrypting)
-		{
-			this.keyBasedEncryptionDisabled(true);
-			this.passwordBasedEncryptionDisabled(true);
-		}
-		else
-		{
-			this.keyBasedEncryptionDisabled(false);
-			this.passwordBasedEncryptionDisabled(false);
 		}
 	});
 }
@@ -186,7 +167,7 @@ EncryptFilePopup.prototype.encrypt = async function ()
 	let oResult = await OpenPgpFileProcessor.processFileEncryption(
 		this.oFile,
 		this.oFilesView,
-		this.recipientAutocompleteItem().email,
+		this.recipientAutocompleteItem() ? this.recipientAutocompleteItem().email : '',
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
 		this.sign(),
 		this.passphraseFile()
@@ -262,7 +243,7 @@ EncryptFilePopup.prototype.showResults = function (oData)
 	const {result, password, link} = oData;
 	if (result)
 	{
-		if (this.recipientAutocompleteItem().hasKey)
+		if (this.recipientAutocompleteItem() && this.recipientAutocompleteItem().hasKey)
 		{
 			this.sendButtonText(TextUtils.i18n('%MODULENAME%/ACTION_SEND_ENCRYPTED_EMAIL'));
 			if (this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password)
