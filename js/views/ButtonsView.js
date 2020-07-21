@@ -1,8 +1,8 @@
 'use strict';
 
 let
-	CFileModel = require('modules/FilesWebclient/js/models/CFileModel.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
+
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js'),
 	SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
@@ -43,14 +43,21 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 				]);
 			}
 		},
-		() => {//button is active only when one file is selected
+		() => {
+			// Conditions for button activity:
+			// Personal: one file or one folder
+			// Corporate: one file or one folder
+			// Encrypted: one file only
+			// Shared: nothing
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
-				&& selectedItem() instanceof CFileModel
 				&& !oFilesView.isZipFolder()
-				&& (oFilesView.storageType() === Enums.FileStorageType.Personal
-					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted)
-				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode);
+				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
+				&& (
+					oFilesView.storageType() === Enums.FileStorageType.Personal || oFilesView.storageType() === Enums.FileStorageType.Corporate
+					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().constructor.name === 'CFileModel'
+				)
+			;
 		}
 	);
 };
