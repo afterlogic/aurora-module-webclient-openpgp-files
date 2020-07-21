@@ -3,13 +3,17 @@
 let
 	_ = require('underscore'),
 	ko = require('knockout'),
+	
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 
 	CAbstractPopup = require('%PathToCoreWebclientModule%/js/popups/CAbstractPopup.js'),
-	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
+	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
+	
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
 	SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
-	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
-	Screens = require('%PathToCoreWebclientModule%/js/Screens.js')
+	
+	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
+	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
 /**
  * @constructor
@@ -20,6 +24,9 @@ function CreatePublicLinkPopup()
 	this.oFile = null;
 	this.oFilesView = null;
 	this.encryptPublicLink = ko.observable(false);
+	this.allowLifetime = ko.computed(function () {
+		return Settings.EnablePublicLinkLifetime && this.encryptPublicLink();
+	}, this);
 	this.isCreatingPublicLink = ko.observable(false);
 	this.selectedLifetimeHrs = ko.observable(null);
 	this.lifetime = ko.observableArray([

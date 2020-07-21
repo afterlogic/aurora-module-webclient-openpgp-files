@@ -3,6 +3,14 @@
 		false,
 		"bool"
 	],
+	"EnableSelfDestructingMessages": [
+		true,
+		"bool"
+	],
+	"EnablePublicLinkLifetime": [
+		true,
+		"bool"
+	],
     "AvailableFor": [
 		["FilesWebclient"],
 		"array"

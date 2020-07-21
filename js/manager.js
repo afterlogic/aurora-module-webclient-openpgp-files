@@ -41,10 +41,13 @@ module.exports = oAppData => {
 					let CFileView = require('modules/%ModuleName%/js/views/CFileView.js');
 					return new CFileView();
 				};
-				oScreens[Settings.SelfDestructMessageHash] = () => {
-					let CSelfDestructingEncryptedMessageView = require('modules/%ModuleName%/js/views/CSelfDestructingEncryptedMessageView.js');
-					return new CSelfDestructingEncryptedMessageView();
-				};
+				if (Settings.EnableSelfDestructingMessages)
+				{
+					oScreens[Settings.SelfDestructMessageHash] = () => {
+						let CSelfDestructingEncryptedMessageView = require('modules/%ModuleName%/js/views/CSelfDestructingEncryptedMessageView.js');
+						return new CSelfDestructingEncryptedMessageView();
+					};
+				}
 				return oScreens;
 			}
 		};
@@ -55,7 +58,10 @@ module.exports = oAppData => {
 			start: ModulesManager => {
 				let SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js');
 				ModulesManager.run('FilesWebclient', 'registerToolbarButtons', [getButtonView()]);
-				ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeButtonsView.js')]);
+				if (Settings.EnableSelfDestructingMessages)
+				{
+					ModulesManager.run('MailWebclient', 'registerComposeToolbarController', [require('modules/%ModuleName%/js/views/ComposeButtonsView.js')]);
+				}
 				App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
 					const fParentHandler = oParams.View.onShareIconClick;
 					oParams.View.onShareIconClick = oItem => {

@@ -46,7 +46,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 	{
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
 
-		$aSettings = array();
+		$aSettings = array(
+			'EnableSelfDestructingMessages' => $this->getConfig('EnableSelfDestructingMessages', false),
+			'EnablePublicLinkLifetime' => $this->getConfig('EnablePublicLinkLifetime', false),
+		);
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if ($oUser && $oUser->isNormalOrTenant())
 		{
