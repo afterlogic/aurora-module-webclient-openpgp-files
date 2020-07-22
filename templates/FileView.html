@@ -45,16 +45,16 @@
 		</audio>
 	</div>
 	<span class="buttons">
-		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : play,
+		<span class="button button-fill" data-bind="click: isDownloadingAndDecrypting() ? false : play,
 			visible: bShowPlayButton() && !bShowVideoPlayer() && !bShowAudioPlayer(),
 			css: {'disabled': isDownloadingAndDecrypting()},
 			i18n: {'key': '%MODULENAME%/ACTION_PLAY'} "></span>
-		<span class="button" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
+		<span class="button button-fill" data-bind="click: isDownloadingAndDecrypting() ? false : downloadAndDecryptFile, visible: isDecryptionAvailable(), css: {'disabled': isDownloadingAndDecrypting()}">
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
 		</span>
-		<a class="button download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink && !isUrlFile"></a>
-		<span class="button" data-bind="click: securedLinkDownload,
+		<a class="button button-fill download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink && !isUrlFile"></a>
+		<span class="button button-fill" data-bind="click: securedLinkDownload,
 			visible: bSecuredLink && !isUrlFile,
 			i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}">
 		</span>

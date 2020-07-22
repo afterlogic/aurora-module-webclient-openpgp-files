@@ -284,7 +284,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 									else if ($bIsEncyptedFile)
 									{
 										$this->aPublicFileData['PgpEncryptionMode'] = $aData['PgpEncryptionMode'];
-										$this->aPublicFileData['PgpEncryptionRecipientEmail'] = $aData['RecipientEmail'];
+										$this->aPublicFileData['PgpEncryptionRecipientEmail'] = isset($aData['RecipientEmail']) ? $aData['RecipientEmail'] : '';
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
 										$this->aPublicFileData['ParanoidKeyPublic'] = $aFileInfo->ExtendedProps['ParanoidKeyPublic'];

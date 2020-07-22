@@ -32,6 +32,11 @@ module.exports = oAppData => {
 		return oButtonsView;
 	}
 
+	if (App.isMobile() && App.isPublic())
+	{
+		require('node_modules/framework7/dist/css/framework7.material.css');
+	}
+
 	if (App.isPublic())
 	{
 		return {
