@@ -1,9 +1,12 @@
 'use strict';
 
 let
+	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
+	AlertPopup = require('%PathToCoreWebclientModule%/js/popups/AlertPopup.js'),
+	
 	EncryptFilePopup =  require('modules/%ModuleName%/js/popups/EncryptFilePopup.js'),
 	SharePopup = require('modules/%ModuleName%/js/popups/SharePopup.js'),
 	CreatePublicLinkPopup =  require('modules/%ModuleName%/js/popups/CreatePublicLinkPopup.js')
@@ -27,6 +30,10 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			if (selectedItem().published())
 			{
 				Popups.showPopup(SharePopup, [selectedItem()]);
+			}
+			else if (selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
+			{
+				Popups.showPopup(AlertPopup, [TextUtils.i18n('%MODULENAME%/INFO_SHARING_NOT_SUPPORTED'), null, TextUtils.i18n('%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE')]);
 			}
 			else if (selectedItem()?.oExtendedProps?.InitializationVector)
 			{
