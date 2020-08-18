@@ -27,11 +27,12 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
+			let bIsFile = selectedItem().constructor.name === 'CFileModel';
 			if (selectedItem().published())
 			{
 				Popups.showPopup(SharePopup, [selectedItem()]);
 			}
-			else if (selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
+			else if (bIsFile && selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
 			{
 				Popups.showPopup(AlertPopup, [TextUtils.i18n('%MODULENAME%/INFO_SHARING_NOT_SUPPORTED'), null, TextUtils.i18n('%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE')]);
 			}
