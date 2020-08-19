@@ -27,12 +27,11 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	this.storageType = oFilesView.storageType;
 	this.secureShareCommand = Utils.createCommand(this,
 		() => {
-			let bIsFile = selectedItem().constructor.name === 'CFileModel';
 			if (selectedItem().published())
 			{
 				Popups.showPopup(SharePopup, [selectedItem()]);
 			}
-			else if (bIsFile && selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
+			else if (selectedItem().IS_FILE && selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
 			{
 				Popups.showPopup(AlertPopup, [TextUtils.i18n('%MODULENAME%/INFO_SHARING_NOT_SUPPORTED'), null, TextUtils.i18n('%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE')]);
 			}
@@ -58,17 +57,14 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			// Encrypted: one file only
 			// Shared: nothing
 			
-			// temporary disabled for folders
-			let bIsFile = selectedItem() !== null && selectedItem().constructor.name === 'CFileModel';
-			
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
-				&& bIsFile
+				&& selectedItem().IS_FILE // temporary disabled for folders
 				&& !oFilesView.isZipFolder()
 				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
 				&& (
 					oFilesView.storageType() === Enums.FileStorageType.Personal || oFilesView.storageType() === Enums.FileStorageType.Corporate
-					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().constructor.name === 'CFileModel'
+					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().IS_FILE
 				)
 			;
 		}
