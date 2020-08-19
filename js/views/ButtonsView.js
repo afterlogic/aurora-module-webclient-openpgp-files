@@ -59,6 +59,7 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			// Shared: nothing
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
+				&& selectedItem().constructor.name === 'CFileModel' // temporary disabled for folders
 				&& !oFilesView.isZipFolder()
 				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
 				&& (
