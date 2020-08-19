@@ -57,9 +57,13 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			// Corporate: one file or one folder
 			// Encrypted: one file only
 			// Shared: nothing
+			
+			// temporary disabled for folders
+			let bIsFile = selectedItem() !== null && selectedItem().constructor.name === 'CFileModel';
+			
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
-				&& selectedItem().constructor.name === 'CFileModel' // temporary disabled for folders
+				&& bIsFile
 				&& !oFilesView.isZipFolder()
 				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
 				&& (
