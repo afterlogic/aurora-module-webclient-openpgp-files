@@ -23,7 +23,7 @@ let
 /**
  * @constructor
  */
-function SharePopup()
+function CSharePopup()
 {
 	CAbstractPopup.call(this);
 
@@ -37,7 +37,13 @@ function SharePopup()
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.isEmailEncryptionAvailable = ko.observable(false);
 	this.sendLinkHintText = ko.observable('');
-	this.linkLabel = ko.observable('');
+	this.linkLabel = ko.computed(function () {
+		if (this.password())
+		{
+			return TextUtils.i18n('%MODULENAME%/LABEL_PROTECTED_PUBLIC_LINK');
+		}
+		return TextUtils.i18n('%MODULENAME%/LABEL_PUBLIC_LINK');
+	}, this);
 	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.sign = ko.observable(false);
 	this.passphrase = ko.observable('');
@@ -101,20 +107,20 @@ function SharePopup()
 	this.bAllowShowHistory = !!ShowHistoryPopup;
 }
 
-_.extendOwn(SharePopup.prototype, CAbstractPopup.prototype);
+_.extendOwn(CSharePopup.prototype, CAbstractPopup.prototype);
 
-SharePopup.prototype.PopupTemplate = '%ModuleName%_SharePopup';
+CSharePopup.prototype.PopupTemplate = '%ModuleName%_SharePopup';
 
 /**
  * @param {Object} oItem
  */
-SharePopup.prototype.onOpen = async function (oItem)
+CSharePopup.prototype.onOpen = async function (oItem)
 {
 	this.item = oItem;
 
 	this.publicLink('');
 	this.password('');
-
+	
 	if (this.item.published()
 		&& this.item.oExtendedProps
 		&& this.item.oExtendedProps.PublicLink
@@ -123,14 +129,6 @@ SharePopup.prototype.onOpen = async function (oItem)
 		this.publicLink(UrlUtils.getAppPath() + this.item.oExtendedProps.PublicLink);
 		this.publicLinkFocus(true);
 		this.password(this.item.oExtendedProps.PasswordForSharing ? this.item.oExtendedProps.PasswordForSharing : '');
-		if (this.password())
-		{
-			this.linkLabel(TextUtils.i18n('%MODULENAME%/LABEL_PROTECTED_PUBLIC_LINK'));
-		}
-		else
-		{
-			this.linkLabel(TextUtils.i18n('%MODULENAME%/LABEL_PUBLIC_LINK'));
-		}
 		await OpenPgpEncryptor.oPromiseInitialised;
 		this.keys(OpenPgpEncryptor.getKeys());
 		this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
@@ -150,13 +148,13 @@ SharePopup.prototype.onOpen = async function (oItem)
 	}
 };
 
-SharePopup.prototype.cancelPopup = function ()
+CSharePopup.prototype.cancelPopup = function ()
 {
 	this.clearPopup();
 	this.closePopup();
 };
 
-SharePopup.prototype.clearPopup = function ()
+CSharePopup.prototype.clearPopup = function ()
 {
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
@@ -166,7 +164,7 @@ SharePopup.prototype.clearPopup = function ()
 	this.sUserEmail = '';
 };
 
-SharePopup.prototype.onCancelSharingClick = function ()
+CSharePopup.prototype.onCancelSharingClick = function ()
 {
 	if (this.item)
 	{
@@ -184,7 +182,7 @@ SharePopup.prototype.onCancelSharingClick = function ()
 	}
 };
 
-SharePopup.prototype.onCancelSharingResponse = function (oResponse, oRequest)
+CSharePopup.prototype.onCancelSharingResponse = function (oResponse, oRequest)
 {
 	this.isRemovingPublicLink(false);
 	if (oResponse.Result)
@@ -207,7 +205,7 @@ SharePopup.prototype.onCancelSharingResponse = function (oResponse, oRequest)
  * @param {object} oRequest
  * @param {function} fResponse
  */
-SharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
+CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
 	const fAutocompleteCallback = ModulesManager.run('ContactsWebclient',
 		'getSuggestionsAutocompleteCallback',
@@ -261,14 +259,14 @@ SharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 	}
 };
 
-SharePopup.prototype.getPublicKeys = function ()
+CSharePopup.prototype.getPublicKeys = function ()
 {
 	let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
 
 	return aPublicKeys.map(oKey => oKey.getEmail());
 };
 
-SharePopup.prototype.sendEmail = async function ()
+CSharePopup.prototype.sendEmail = async function ()
 {
 	const sSubject = TextUtils.i18n('%MODULENAME%/PUBLIC_LINK_MESSAGE_SUBJECT', {'FILENAME': this.item.fileName()});
 
@@ -324,11 +322,11 @@ SharePopup.prototype.sendEmail = async function ()
 	}
 };
 
-SharePopup.prototype.showHistory = function () {
+CSharePopup.prototype.showHistory = function () {
 	if (this.bAllowShowHistory)
 	{
 		Popups.showPopup(ShowHistoryPopup, [TextUtils.i18n('%MODULENAME%/HEADING_HISTORY_POPUP'), this.item]);
 	}
 }
 
-module.exports = new SharePopup();
+module.exports = new CSharePopup();

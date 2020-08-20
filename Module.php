@@ -344,8 +344,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			$oItem instanceof \Aurora\Modules\Files\Classes\FileItem
 			&& isset($oItem->TypeStr)
 			&& $oItem->TypeStr === 'personal'
-			&& isset($oItem->IsFolder)
-			&& !$oItem->IsFolder
 		)
 		{
 			$oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);

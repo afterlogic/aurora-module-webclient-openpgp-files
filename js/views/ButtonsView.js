@@ -15,13 +15,13 @@ let
 /**
  * @constructor
  */
-function ButtonsView()
+function СButtonsView()
 {
 }
 
-ButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
+СButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
 
-ButtonsView.prototype.useFilesViewData = function (oFilesView)
+СButtonsView.prototype.useFilesViewData = function (oFilesView)
 {
 	let selectedItem = oFilesView.selector.itemSelected;
 	this.storageType = oFilesView.storageType;
@@ -59,11 +59,11 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 			
 			return selectedItem() !== null
 				&& oFilesView.selector.listCheckedAndSelected().length === 1
-				&& selectedItem().IS_FILE // temporary disabled for folders
 				&& !oFilesView.isZipFolder()
 				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
 				&& (
-					oFilesView.storageType() === Enums.FileStorageType.Personal || oFilesView.storageType() === Enums.FileStorageType.Corporate
+					oFilesView.storageType() === Enums.FileStorageType.Personal
+					|| oFilesView.storageType() === Enums.FileStorageType.Corporate
 					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().IS_FILE
 				)
 			;
@@ -71,4 +71,4 @@ ButtonsView.prototype.useFilesViewData = function (oFilesView)
 	);
 };
 
-module.exports = new ButtonsView();
+module.exports = new СButtonsView();

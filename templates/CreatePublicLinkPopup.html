@@ -9,12 +9,15 @@
 			<div class="fieldset">
 				<div class="row">
 					<span>
-						<label class="custom_checkbox" data-bind="css: {checked: encryptPublicLink}">
+						<label class="custom_checkbox" data-bind="css: {checked: encryptPublicLink, disabled: isFolder}">
 							<span class="icon"></span>
-							<input type="checkbox" id="EncryptPublicLink" data-bind="checked: encryptPublicLink" />
+							<input type="checkbox" id="EncryptPublicLink" data-bind="checked: encryptPublicLink, disable: isFolder" />
 						</label>
-						<label for="EncryptPublicLink" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPT_PUBLIC_LINK'}"></label>
+						<label for="EncryptPublicLink" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPT_PUBLIC_LINK'}, css: {disabled: isFolder}"></label>
 					</span>
+				</div>
+				<div class="row hint" data-bind="visible: isFolder">
+					<span data-bind="i18n: {'key': '%MODULENAME%/INFO_PASSWORD_PROTECT_ONLY_FILES'}"></span>
 				</div>
 				<div class="row" data-bind="visible: allowLifetime">
 					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_LINK_LIFETIME'}"></span>

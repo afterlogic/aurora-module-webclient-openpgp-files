@@ -70,9 +70,15 @@ module.exports = oAppData => {
 				App.subscribeEvent('FilesWebclient::ConstructView::after', function (oParams) {
 					const fParentHandler = oParams.View.onShareIconClick;
 					oParams.View.onShareIconClick = oItem => {
-						if (oItem && oItem instanceof CFileModel
+						// Conditions for button activity:
+						// Personal: one file or one folder
+						// Corporate: one file or one folder
+						// Encrypted: one file only
+						// Shared: nothing
+						if (oItem
 							&& (oParams.View.storageType() === Enums.FileStorageType.Personal
-								|| oParams.View.storageType() === Enums.FileStorageType.Encrypted)
+								|| oParams.View.storageType() === Enums.FileStorageType.Corporate
+								|| oParams.View.storageType() === Enums.FileStorageType.Encrypted && oItem.IS_FILE)
 						)
 						{
 							Popups.showPopup(SharePopup, [oItem]);

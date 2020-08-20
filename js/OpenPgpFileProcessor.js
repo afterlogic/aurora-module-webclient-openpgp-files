@@ -16,14 +16,9 @@ let
 	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
 ;
 
-/**
- * @constructor
- */
-function OpenPgpFileProcessor()
-{
-}
+let OpenPgpFileProcessor = {};
 
-OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode, bSign, sPassphrase)
+OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode, bSign, sPassphrase)
 {
 	const sPath = oFilesView.currentPath();
 	const sStorageType = oFilesView.storageType();
@@ -114,7 +109,7 @@ OpenPgpFileProcessor.prototype.processFileEncryption = async function (oFile, oF
 	return oResultData;
 };
 
-OpenPgpFileProcessor.prototype.decryptFile = async function (oBlob, sRecipientEmail, sPassword, bPasswordBasedEncryption, sParanoidKeyPublic, sInitializationVector)
+OpenPgpFileProcessor.decryptFile = async function (oBlob, sRecipientEmail, sPassword, bPasswordBasedEncryption, sParanoidKeyPublic, sInitializationVector)
 {
 	let oResult = {
 		result: false
@@ -179,8 +174,8 @@ OpenPgpFileProcessor.prototype.decryptFile = async function (oBlob, sRecipientEm
 	}
 };
 
-OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, sFileName, iSize, bEncryptLink = false, 
-	sRecipientEmail = '', sPgpEncryptionMode = '', iLifetimeHrs = 0)
+OpenPgpFileProcessor.createPublicLink = async function (sType, sPath, sFileName, iSize, bEncryptLink = false, 
+	sRecipientEmail = '', sPgpEncryptionMode = '', iLifetimeHrs = 0, bIsFolder = false)
 {
 	let sLink = '';
 	let oResult = {result: false};
@@ -200,7 +195,7 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 			'Path': sPath,
 			'Name': sFileName,
 			'Size': iSize,
-			'IsFolder': false,
+			'IsFolder': bIsFolder,
 			'RecipientEmail': sRecipientEmail,
 			'PgpEncryptionMode': sPgpEncryptionMode,
 			'LifetimeHrs': iLifetimeHrs
@@ -236,7 +231,7 @@ OpenPgpFileProcessor.prototype.createPublicLink = async function (sType, sPath, 
 	return oResult;
 };
 
-OpenPgpFileProcessor.prototype.getFileContentByUrl = async function (sDownloadUrl, onDownloadProgressCallback)
+OpenPgpFileProcessor.getFileContentByUrl = async function (sDownloadUrl, onDownloadProgressCallback)
 {
 	let response = await fetch(sDownloadUrl);
 	if (response.ok)
@@ -267,7 +262,7 @@ OpenPgpFileProcessor.prototype.getFileContentByUrl = async function (sDownloadUr
 	}
 };
 
-OpenPgpFileProcessor.prototype.saveBlob = async function (oBlob, sFileName)
+OpenPgpFileProcessor.saveBlob = async function (oBlob, sFileName)
 {
 	if (window.navigator && window.navigator.msSaveOrOpenBlob) {
 		window.navigator.msSaveOrOpenBlob(oBlob, sFileName);
@@ -282,7 +277,7 @@ OpenPgpFileProcessor.prototype.saveBlob = async function (oBlob, sFileName)
 	window.URL.revokeObjectURL(blobUrl);
 };
 
-OpenPgpFileProcessor.prototype.processFileDecryption = async function (sFileName, sDownloadUrl, sRecipientEmail, sPassword, sEncryptionMode, sParanoidKeyPublic, sInitializationVector)
+OpenPgpFileProcessor.processFileDecryption = async function (sFileName, sDownloadUrl, sRecipientEmail, sPassword, sEncryptionMode, sParanoidKeyPublic, sInitializationVector)
 {
 	let oBlob = await this.getFileContentByUrl(sDownloadUrl);
 	if (oBlob instanceof Blob)
@@ -313,7 +308,7 @@ OpenPgpFileProcessor.prototype.processFileDecryption = async function (sFileName
 	}
 };
 
-OpenPgpFileProcessor.prototype.getFileNameForDownload = function (sFileName, sRecipientEmail)
+OpenPgpFileProcessor.getFileNameForDownload = function (sFileName, sRecipientEmail)
 {
 	const sFileNameWithoutExtension = Utils.getFileNameWithoutExtension(sFileName);
 	const sDelimiter = '_' + sRecipientEmail;
@@ -336,7 +331,7 @@ OpenPgpFileProcessor.prototype.getFileNameForDownload = function (sFileName, sRe
 	return sNewName;
 };
 
-OpenPgpFileProcessor.prototype.updateFileExtendedProps = async function (oFile, oExtendedProps) {
+OpenPgpFileProcessor.updateFileExtendedProps = async function (oFile, oExtendedProps) {
 	//Update file extended props
 	let oPromiseUpdateExtendedProps = new Promise( (resolve, reject) => {
 		Ajax.send(
@@ -362,7 +357,7 @@ OpenPgpFileProcessor.prototype.updateFileExtendedProps = async function (oFile, 
 	return await oPromiseUpdateExtendedProps;
 };
 
-OpenPgpFileProcessor.prototype.decryptAsSingleChunk = async function (oBlob, sKey, sInitializationVector) {
+OpenPgpFileProcessor.decryptAsSingleChunk = async function (oBlob, sKey, sInitializationVector) {
 	let oKey = await JscryptoKey.getKeyFromString(sKey);
 	let aEncryptedData = await new Response(oBlob).arrayBuffer();
 	let oDecryptedArrayBuffer = await crypto.subtle.decrypt(
@@ -377,4 +372,4 @@ OpenPgpFileProcessor.prototype.decryptAsSingleChunk = async function (oBlob, sKe
 	return new Uint8Array(oDecryptedArrayBuffer);
 };
 
-module.exports = new OpenPgpFileProcessor();
+module.exports = OpenPgpFileProcessor;

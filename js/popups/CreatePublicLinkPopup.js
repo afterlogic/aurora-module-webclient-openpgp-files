@@ -15,13 +15,15 @@ let
 	OpenPgpFileProcessor = require('modules/%ModuleName%/js/OpenPgpFileProcessor.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js')
 ;
+
 /**
  * @constructor
  */
-function CreatePublicLinkPopup()
+function CCreatePublicLinkPopup()
 {
 	CAbstractPopup.call(this);
-	this.oFile = null;
+	this.oItem = null;
+	this.isFolder = ko.observable(false);
 	this.oFilesView = null;
 	this.encryptPublicLink = ko.observable(false);
 	this.allowLifetime = ko.computed(function () {
@@ -49,53 +51,55 @@ function CreatePublicLinkPopup()
 	]);
 }
 
-_.extendOwn(CreatePublicLinkPopup.prototype, CAbstractPopup.prototype);
+_.extendOwn(CCreatePublicLinkPopup.prototype, CAbstractPopup.prototype);
 
-CreatePublicLinkPopup.prototype.PopupTemplate = '%ModuleName%_CreatePublicLinkPopup';
+CCreatePublicLinkPopup.prototype.PopupTemplate = '%ModuleName%_CreatePublicLinkPopup';
 
-CreatePublicLinkPopup.prototype.onOpen = function (oFile, oFilesView)
+CCreatePublicLinkPopup.prototype.onOpen = function (oItem, oFilesView)
 {
-	this.oFile = oFile;
+	this.oItem = oItem;
 	this.oFilesView = oFilesView;
 	this.selectedLifetimeHrs(0);
+	this.isFolder(this.oItem && !this.oItem.IS_FILE);
 };
 
-CreatePublicLinkPopup.prototype.cancelPopup = function ()
+CCreatePublicLinkPopup.prototype.cancelPopup = function ()
 {
 	this.clearPopup();
 	this.closePopup();
 };
 
-CreatePublicLinkPopup.prototype.clearPopup = function ()
+CCreatePublicLinkPopup.prototype.clearPopup = function ()
 {
-	this.oFile = null;
+	this.oItem = null;
 	this.oFilesView = null;
 	this.encryptPublicLink(false);
 };
 
-CreatePublicLinkPopup.prototype.createPublicLink = async function ()
+CCreatePublicLinkPopup.prototype.createPublicLink = async function ()
 {
 	this.isCreatingPublicLink(true);
 	const oPublicLinkResult = await OpenPgpFileProcessor.createPublicLink(
-		this.oFile.storageType(),
-		this.oFile.path(),
-		this.oFile.fileName(),
-		this.oFile.size(),
+		this.oItem.storageType(),
+		this.oItem.path(),
+		this.oItem.fileName(),
+		this.oItem.IS_FILE ? this.oItem.size() : 0,
 		this.encryptPublicLink(),
 		'',
 		'',
-		this.selectedLifetimeHrs()
+		this.selectedLifetimeHrs(),
+		!this.oItem.IS_FILE
 	);
 	this.isCreatingPublicLink(false);
 	if (oPublicLinkResult.result && oPublicLinkResult.link)
 	{
-		this.oFile.published(true);
-		this.oFile.oExtendedProps.PublicLink = oPublicLinkResult.link;
+		this.oItem.published(true);
+		this.oItem.oExtendedProps.PublicLink = oPublicLinkResult.link;
 		if (oPublicLinkResult.password)
 		{
-			this.oFile.oExtendedProps.PasswordForSharing = oPublicLinkResult.password;
+			this.oItem.oExtendedProps.PasswordForSharing = oPublicLinkResult.password;
 		}
-		Popups.showPopup(SharePopup, [this.oFile]);
+		Popups.showPopup(SharePopup, [this.oItem]);
 		this.cancelPopup();
 	}
 	else
@@ -104,4 +108,4 @@ CreatePublicLinkPopup.prototype.createPublicLink = async function ()
 	}
 };
 
-module.exports = new CreatePublicLinkPopup();
+module.exports = new CCreatePublicLinkPopup();
