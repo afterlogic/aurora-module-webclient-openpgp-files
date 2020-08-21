@@ -65,8 +65,6 @@ function SelfDestructingEncryptedMessagePopup()
 			value: 7 * 24
 		}
 	]);
-	this.signFileHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
-	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
 	this.cancelButtonText = ko.computed(() => {
 		return this.isSuccessfullyEncryptedAndUploaded() ?
@@ -131,18 +129,28 @@ function SelfDestructingEncryptedMessagePopup()
 				this.sign(true);
 		}
 	});
-	this.sign.subscribe(bSign => {
-		if (bSign)
+	this.signEmailHintText = ko.computed(function () {
+		if (this.sign())
 		{
-			this.signFileHintText(TextUtils.i18n('%MODULENAME%/HINT_SIGN_FILE'));
-			this.signEmailHintText(TextUtils.i18n('%MODULENAME%/HINT_SIGN_EMAIL'));
+			return TextUtils.i18n('%MODULENAME%/HINT_SIGN_EMAIL');
 		}
-		else
+		return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL');
+	}, this);
+	this.signFileHintText = ko.computed(function () {
+		if (this.sign())
 		{
-			this.signFileHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE'));
-			this.signEmailHintText(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
+			return TextUtils.i18n('%MODULENAME%/HINT_SIGN_FILE');
 		}
-	});
+		if (this.encryptionBasedMode() !== Enums.EncryptionBasedOn.Key)
+		{
+			return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE_REQUIRES_KEYBASED_ENCRYPTION');
+		}
+		if (!this.isSigningAvailable())
+		{
+			return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE_REQUIRES_PRIVATE_KEY');
+		}
+		return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE');
+	}, this);
 	this.isEncrypting.subscribe(bEncrypting => {
 		//UI elements become disabled when encryption started
 		if (bEncrypting)
