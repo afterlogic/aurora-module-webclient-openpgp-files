@@ -229,7 +229,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 						'UserId' => $oUser->EntityId
 					]);
 
-					$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name']);
+					$sType = isset($aData['Type']) ? $aData['Type'] : '';
+					$sPath = isset($aData['Path']) ? $aData['Path'] : '';
+					$sName = isset($aData['Name']) ? $aData['Name'] : '';
+					$aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
 
 					\Aurora\System\Api::SetUserSession($aCurSession);
 
