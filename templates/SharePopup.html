@@ -33,18 +33,7 @@
 							<span class="icon"></span>
 							<input type="checkbox" data-bind="checked: sign, enable: isSigningAvailable()" id="openpgp-sign" />
 						</label>
-						<input name="fake_input_for_autocomplete" type="text" class="value input" style="display: none;" />
 						<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}, style: {'margin': '5px 0', 'display': 'inline-block'}" for="openpgp-sign"></label>
-						<span data-bind="visible: sign()">
-							<span class="label pgp_password" 
-								data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'},
-								style: { 'width': '100px', 'margin-left': '0'}">
-							</span>
-							<input autocomplete="new-password" type="password" class="value input" 
-								data-bind="value: passphrase,
-									style: { 'width': '200px'},
-									enable: sign() && isSigningAvailable()" />
-						</span>
 					</div>
 				</div>
 				<div class="row" data-bind="visible: password()">

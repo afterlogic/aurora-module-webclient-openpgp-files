@@ -31,6 +31,12 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 			sParanoidEncryptedKey,
 			sPassphrase
 		);
+		if (oPGPDecryptionResult.passphrase)
+		{
+			// saving passphrase so that it won't be asked again until encrypt popup is closed
+			sPassphrase = oPGPDecryptionResult.passphrase;
+			oResultData.passphrase = sPassphrase;
+		}
 		if (oPGPDecryptionResult.result)
 		{
 			const sKey = oPGPDecryptionResult.result;

@@ -39,8 +39,7 @@ function EncryptFilePopup()
 	this.sign = ko.observable(false);
 	this.isSigningAvailable = ko.observable(false);
 	this.isPrivateKeyAvailable = ko.observable(false);
-	this.passphraseFile = ko.observable('');
-	this.passphraseEmail = ko.observable('');
+	this.passphrase = ko.observable('');
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
 	this.sUserEmail = '';
 	this.cancelButtonText = ko.computed(() => {
@@ -163,8 +162,7 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.isSuccessfullyEncryptedAndUploaded(false);
 	this.encryptedFileLink('');
 	this.encryptedFilePassword('');
-	this.passphraseFile('');
-	this.passphraseEmail('');
+	this.passphrase('');
 	this.sign(false);
 	this.sUserEmail = '';
 };
@@ -178,12 +176,13 @@ EncryptFilePopup.prototype.encrypt = async function ()
 		this.recipientAutocompleteItem() ? this.recipientAutocompleteItem().email : '',
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
 		this.sign(),
-		this.passphraseFile()
+		''
 	);
 	this.isEncrypting(false);
-	if (this.sign() && oResult.result)
+	if (this.sign() && oResult.result && oResult.passphrase)
 	{
-		this.passphraseEmail(this.passphraseFile());
+		// saving passphrase so that it won't be asked again until encrypt popup is closed
+		this.passphrase(oResult.passphrase);
 	}
 	this.showResults(oResult);
 };
@@ -311,7 +310,7 @@ EncryptFilePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphraseEmail(), this.sUserEmail);
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphrase(), this.sUserEmail);
 
 		if (OpenPgpResult && OpenPgpResult.result)
 		{

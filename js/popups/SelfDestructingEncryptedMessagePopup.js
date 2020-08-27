@@ -47,8 +47,7 @@ function SelfDestructingEncryptedMessagePopup()
 	this.sign = ko.observable(false);
 	this.isSigningAvailable = ko.observable(false);
 	this.isPrivateKeyAvailable = ko.observable(false);
-	this.passphraseFile = ko.observable('');
-	this.passphraseEmail = ko.observable('');
+	this.passphrase = ko.observable('');
 	this.password = ko.observable('');
 	this.selectedLifetimeHrs = ko.observable(null);
 	this.lifetime = ko.observableArray([
@@ -241,8 +240,7 @@ SelfDestructingEncryptedMessagePopup.prototype.clearPopup = function ()
 	this.isSuccessfullyEncryptedAndUploaded(false);
 	this.encryptedFileLink('');
 	this.encryptedFilePassword('');
-	this.passphraseFile('');
-	this.passphraseEmail('');
+	this.passphrase('');
 	this.sign(false);
 	this.password('');
 };
@@ -262,9 +260,15 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 		aPrivateKeys,
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
 		this.sign(),
-		this.passphraseEmail()
+		''
 	);
-
+	console.log('OpenPgpResult', OpenPgpResult);
+	if (OpenPgpResult.passphrase)
+	{
+		// saving passphrase so that it won't be asked again until "self-destructing secure email" popup is closed
+		this.passphrase(OpenPgpResult.passphrase);
+	}
+	
 	if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
 	{
 		let {data, password} = OpenPgpResult.result;
@@ -307,7 +311,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 					sBody,
 					this.recipientAutocompleteItem().email,
 					this.sign(),
-					this.passphraseEmail(),
+					this.passphrase(),
 					this.sFromEmail
 				);
 				if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
@@ -362,7 +366,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 		}
 	}
-	else
+	else if (!OpenPgpResult || !OpenPgpResult.userCanceled)
 	{
 		ErrorsUtils.showPgpErrorByCode(OpenPgpResult, Enums.PgpAction.Encrypt);
 	}

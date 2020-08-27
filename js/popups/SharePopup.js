@@ -46,7 +46,6 @@ function CSharePopup()
 	}, this);
 	this.signEmailHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_EMAIL'));
 	this.sign = ko.observable(false);
-	this.passphrase = ko.observable('');
 	this.isPrivateKeyAvailable = ko.observable(false);
 	this.isSigningAvailable = ko.observable(false);
 	this.sUserEmail = '';
@@ -158,7 +157,6 @@ CSharePopup.prototype.clearPopup = function ()
 {
 	this.recipientAutocompleteItem(null);
 	this.recipientAutocomplete('');
-	this.passphrase('');
 	this.sign(false);
 	this.isEmailEncryptionAvailable(false);
 	this.sUserEmail = '';
@@ -292,7 +290,7 @@ CSharePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), this.passphrase(), this.sUserEmail);
+		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), '', this.sUserEmail);
 		if (OpenPgpResult && OpenPgpResult.result)
 		{
 			const sEncryptedBody = OpenPgpResult.result;
@@ -304,7 +302,7 @@ CSharePopup.prototype.sendEmail = async function ()
 			});
 			this.cancelPopup();
 		}
-		else
+		else if (!OpenPgpResult || !OpenPgpResult.userCanceled)
 		{
 			ErrorsUtils.showPgpErrorByCode(OpenPgpResult, Enums.PgpAction.Encrypt);
 		}
