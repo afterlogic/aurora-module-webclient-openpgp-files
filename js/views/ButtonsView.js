@@ -58,7 +58,7 @@ function СButtonsView()
 			// Shared: nothing
 			
 			return selectedItem() !== null
-				&& oFilesView.selector.listCheckedAndSelected().length === 1
+				&& oFilesView.checkedReadyForOperations() && oFilesView.selector.listCheckedAndSelected().length === 1
 				&& !oFilesView.isZipFolder()
 				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
 				&& (
