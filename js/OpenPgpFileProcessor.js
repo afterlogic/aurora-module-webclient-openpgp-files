@@ -129,6 +129,7 @@ OpenPgpFileProcessor.decryptFile = async function (oBlob, sRecipientEmail, sPass
 			sPassword,
 			bPasswordBasedEncryption
 		);
+
 		if (!oPGPDecryptionResult.result)
 		{
 			ErrorsUtils.showPgpErrorByCode(oPGPDecryptionResult, Enums.PgpAction.DecryptVerify);
@@ -175,7 +176,7 @@ OpenPgpFileProcessor.decryptFile = async function (oBlob, sRecipientEmail, sPass
 		return oResult;
 	}
 	catch (oError)
-	{ console.log(oError)
+	{
 		return oResult;
 	}
 };
@@ -296,6 +297,7 @@ OpenPgpFileProcessor.processFileDecryption = async function (sFileName, sDownloa
 			sParanoidKeyPublic,
 			sInitializationVector
 		);
+
 		if (oDecryptionResult.result)
 		{
 			this.saveBlob(
@@ -305,7 +307,7 @@ OpenPgpFileProcessor.processFileDecryption = async function (sFileName, sDownloa
 		}
 		else
 		{
-			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
+//			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
 		}
 	}
 	else

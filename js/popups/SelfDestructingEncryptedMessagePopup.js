@@ -262,7 +262,6 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 		this.sign(),
 		''
 	);
-	console.log('OpenPgpResult', OpenPgpResult);
 	if (OpenPgpResult.passphrase)
 	{
 		// saving passphrase so that it won't be asked again until "self-destructing secure email" popup is closed

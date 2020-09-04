@@ -231,6 +231,22 @@ CFileView.prototype.showVideoPlayer = function (sSrc)
 {
 	let sType = 'video/' + Utils.getFileExtension(this.fileName).toLowerCase();
 	this.oPlayer = videojs('video-player');
+	if (ModulesManager.isModuleAvailable('ActivityHistory'))
+	{
+		// play event is fired to many times
+		this.oPlayer.on('loadeddata', () => {
+			Ajax.send('ActivityHistory', 'CreateFromHash', {
+				'Hash': this.hash,
+				'EventName': 'play'
+			});
+		});
+		this.oPlayer.on('ended', () => {
+			Ajax.send('ActivityHistory', 'CreateFromHash', {
+				'Hash': this.hash,
+				'EventName': 'play-finish'
+			});
+		});
+	}
 	this.oPlayer.src({type: sType, src: sSrc});
 	this.bShowVideoPlayer(true);
 };
@@ -239,6 +255,22 @@ CFileView.prototype.showAudioPlayer = function (sSrc)
 {
 	let sType = 'audio/' + Utils.getFileExtension(this.fileName).toLowerCase();
 	this.oPlayer = videojs('audio-player');
+	if (ModulesManager.isModuleAvailable('ActivityHistory'))
+	{
+		// play event is fired to many times
+		this.oPlayer.on('loadeddata', () => {
+			Ajax.send('ActivityHistory', 'CreateFromHash', {
+				'Hash': this.hash,
+				'EventName': 'play'
+			});
+		});
+		this.oPlayer.on('ended', () => {
+			Ajax.send('ActivityHistory', 'CreateFromHash', {
+				'Hash': this.hash,
+				'EventName': 'play-finish'
+			});
+		});
+	}
 	this.oPlayer.src({type: sType, src: sSrc});
 	this.bShowAudioPlayer(true);
 };
