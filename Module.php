@@ -29,6 +29,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
 		$this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
+		$this->subscribeEvent('Files::DeletePublicLink::after', [$this, 'onAfterDeletePublicLink']);
 	}
 
 	private function isUrlFileType($sFileName)
@@ -385,5 +386,16 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				}
 			}
 		}
+	}
+
+	public function onAfterDeletePublicLink(&$aArgs, &$mResult)
+	{
+		\Aurora\Modules\Files\Module::Decorator()->UpdateExtendedProps(
+			$aArgs['UserId'],
+			$aArgs['Type'],
+			$aArgs['Path'],
+			$aArgs['Name'],
+			['ParanoidKeyPublic' => null]
+		 );
 	}
 }
