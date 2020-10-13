@@ -42,6 +42,9 @@
 			</div>
 			<div class="buttons">
 				<span class="button contour_button" data-bind="i18n: {'key': '%MODULENAME%/ACTION_SHOW_HISTORY'}, click: showHistory, visible: bAllowShowHistory"></span>
+				<!-- ko foreach: addButtons -->
+					<!-- ko template: {name: $data.ViewTemplate, data: $data} --><!-- /ko -->
+				<!-- /ko -->
 				<span class="button remove" data-bind="click: recipientAutocompleteItem() ? sendEmail : false, css: {'disabled': !recipientAutocompleteItem()}">
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_SEND_EMAIL'}, visible: !isEmailEncryptionAvailable()"></span>
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_SEND_ENCRYPTED_EMAIL'}, visible: isEmailEncryptionAvailable()"></span>

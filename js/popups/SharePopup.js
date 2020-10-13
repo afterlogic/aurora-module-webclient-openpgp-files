@@ -104,6 +104,8 @@ function CSharePopup()
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
 
 	this.bAllowShowHistory = !!ShowHistoryPopup;
+	
+	this.addButtons = ko.observableArray([]);
 }
 
 _.extendOwn(CSharePopup.prototype, CAbstractPopup.prototype);
@@ -140,6 +142,12 @@ CSharePopup.prototype.onOpen = async function (oItem)
 		{
 			this.isPrivateKeyAvailable(false);
 		}
+		var oParams = {
+			AddButtons: [],
+			Item: oItem
+		};
+		App.broadcastEvent('%ModuleName%::OpenSharePopup::after', oParams);
+		this.addButtons(oParams.AddButtons);
 	}
 	else
 	{
