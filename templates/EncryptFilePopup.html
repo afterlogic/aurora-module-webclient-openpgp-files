@@ -71,6 +71,9 @@
 				</div>
 			</div>
 			<div class="buttons">
+				<!-- ko foreach: addButtons -->
+					<!-- ko template: {name: $data.ViewTemplate, data: $data} --><!-- /ko -->
+				<!-- /ko -->
 				<span class="button" data-bind="click: isEncrypting() ? false: encrypt,
 					visible: !isSuccessfullyEncryptedAndUploaded(),
 					css: {'disabled': isEncrypting()}"

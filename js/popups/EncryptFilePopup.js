@@ -123,6 +123,7 @@ function EncryptFilePopup()
 		}
 		return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE');
 	}, this);
+	this.addButtons = ko.observableArray([]);
 }
 
 _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
@@ -131,6 +132,7 @@ EncryptFilePopup.prototype.PopupTemplate = '%ModuleName%_EncryptFilePopup';
 
 EncryptFilePopup.prototype.onOpen = async function (oFile, oFilesView)
 {
+	this.addButtons([]);
 	this.oFile = oFile;
 	this.oFilesView = oFilesView;
 	await OpenPgpEncryptor.oPromiseInitialised;
@@ -278,6 +280,13 @@ EncryptFilePopup.prototype.showResults = function (oData)
 		this.isSuccessfullyEncryptedAndUploaded(true);
 		this.encryptedFileLink(UrlUtils.getAppPath() + link);
 		this.encryptedFilePassword(password);
+		var oParams = {
+			AddButtons: [],
+			EncryptionBasedMode: this.encryptionBasedMode(),
+			EncryptedFileLink: this.encryptedFileLink(),
+		};
+		App.broadcastEvent('%ModuleName%::ShareEncryptedFile::after', oParams);
+		this.addButtons(oParams.AddButtons);
 	}
 	this.isEncrypting(false);
 };

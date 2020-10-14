@@ -361,8 +361,9 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				if (!empty($mMin['__hash__']))
 				{
 					$aExtendedProps = array_merge($oItem->ExtendedProps, [
-						'PasswordForSharing'	=> !empty($mMin['Password']) ? \Aurora\System\Utils::DecryptValue($mMin['Password']) : '',
-						'PublicLink'		=> '?/files-pub/' . $mMin['__hash__'] . '/list'
+						'PasswordForSharing'			=> !empty($mMin['Password']) ? \Aurora\System\Utils::DecryptValue($mMin['Password']) : '',
+						'PublicLink'					=> '?/files-pub/' . $mMin['__hash__'] . '/list',
+						'PublicLinkPgpEncryptionMode'	=> isset($mMin['PgpEncryptionMode']) ? $mMin['PgpEncryptionMode'] : '',
 					]);
 					$oItem->ExtendedProps = $aExtendedProps;
 				}
