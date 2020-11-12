@@ -307,7 +307,7 @@ OpenPgpFileProcessor.processFileDecryption = async function (sFileName, sDownloa
 		}
 		else
 		{
-//			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
+			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
 		}
 	}
 	else
