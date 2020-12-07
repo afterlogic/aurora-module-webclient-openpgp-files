@@ -151,7 +151,7 @@ OpenPgpFileProcessor.decryptFile = async function (oBlob, sRecipientEmail, sPass
 					Screens.showReport(sReport)
 				}
 			}
-			else
+			else if (oPGPDecryptionResult.notices && _.indexOf(oPGPDecryptionResult.notices, Enums.OpenPgpErrors.VerifyErrorNotice) !== -1)
 			{
 				Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_SIGNATURE_NOT_VERIFIED'));
 			}
