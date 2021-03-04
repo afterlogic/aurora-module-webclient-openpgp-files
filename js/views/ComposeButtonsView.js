@@ -12,6 +12,7 @@ var
  */
 function CComposeButtonsView()
 {
+	this.bSendButton = true;
 	this.pgpSecured = ko.observable(false);
 }
 
