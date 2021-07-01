@@ -20,12 +20,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
 	public function init()
 	{
-		\Aurora\Modules\Core\Classes\User::extend(
-			self::GetName(),
-			[
-				'EnableModule'	=> array('bool', false),
-			]
-		);
 		$this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
 		$this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
@@ -77,7 +71,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			if ($oUser->isNormalOrTenant())
 			{
 				$oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-				$oUser->{self::GetName().'::EnableModule'} = $EnableModule;
+				$oUser->setExtendedProp(self::GetName().'::EnableModule', $EnableModule);
 				return $oCoreDecorator->UpdateUserObject($oUser);
 			}
 			if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin)
@@ -94,7 +88,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = [];
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$sID = \Aurora\Modules\Min\Module::generateHashId([$oUser->PublicId, $Type, $Path, $Name]);
 			$oMin = \Aurora\Modules\Min\Module::getInstance();
@@ -159,7 +153,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		\Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::NormalUser);
 		$mResult = [];
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
-		if ($oUser instanceof \Aurora\Modules\Core\Classes\User)
+		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
 			$sID = \Aurora\Modules\Min\Module::generateHashId([$oUser->PublicId, $Subject, $Data]);
 			$oMin = \Aurora\Modules\Min\Module::getInstance();
@@ -352,7 +346,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		{
 			$oUser = \Aurora\System\Api::getUserById($aArgs['UserId']);
 			$iAuthenticatedUserId = \Aurora\System\Api::getAuthenticatedUserId();
-			if ($oUser instanceof \Aurora\Modules\Core\Classes\User
+			if ($oUser instanceof \Aurora\Modules\Core\Models\User
 				&& $iAuthenticatedUserId === $aArgs['UserId']
 			)
 			{
