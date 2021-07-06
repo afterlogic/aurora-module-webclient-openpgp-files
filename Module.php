@@ -124,7 +124,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 					$sHash = $oMin->createMin(
 						$sID,
 						$aProps,
-						$oUser->EntityId
+						$oUser->Id
 					);
 				}
 				else
@@ -133,7 +133,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 					$sHash = $oMin->createMin(
 						$sID,
 						$aProps,
-						$oUser->EntityId,
+						$oUser->Id,
 						$iExpireDate
 					);
 				}
@@ -175,7 +175,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 				$sHash = $oMin->createMin(
 					$sID,
 					$aProps,
-					$oUser->EntityId,
+					$oUser->Id,
 					$iExpireDate
 				);
 				$mMin = $oMin->GetMinByHash($sHash);
@@ -221,7 +221,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
 					$aCurSession = \Aurora\System\Api::GetUserSession();
 					\Aurora\System\Api::SetUserSession([
-						'UserId' => $oUser->EntityId
+						'UserId' => $oUser->Id
 					]);
 
 					$sType = isset($aData['Type']) ? $aData['Type'] : '';
