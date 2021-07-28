@@ -20,6 +20,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
 	public function init()
 	{
+		\Aurora\Modules\Core\Classes\User::extend(
+			self::GetName(),
+			[
+				'EnableModule'	=> array('bool', false),
+			]
+		);
 		$this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
 		$this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
