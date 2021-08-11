@@ -13,7 +13,7 @@
 					<span class="label" data-bind="i18n: {'key': 'COREWEBCLIENT/LABEL_PASSWORD'}"></span>
 					<input readonly="readonly" spellcheck="false" class="value input" type="text" maxlength="255" data-bind="value: password, click: function () {$element.select();}" />
 				</div>
-				<div class="row">
+				<div class="row" data-bind="visible: bAllowSendMessage">
 					<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_RECIPIENT'}, style: {'vertical-align': 'middle'}"></span>
 					<span class="input select-recipient">
 						<input id="select_recipient_input" class="value" spellcheck="false" type="text" autocomplete="on"
@@ -24,10 +24,11 @@
 						<span class="icon" data-bind="visible: recipientAutocompleteItem() && recipientAutocompleteItem().hasKey"></span>
 					</span>
 				</div>
-				<div class="row" data-bind="style: {'visibility': recipientAutocompleteItem() ? 'visible' : 'hidden'}">
+				<div class="row" data-bind="style: {'visibility': recipientAutocompleteItem() ? 'visible' : 'hidden'},
+							visible: bAllowSendMessage">
 					<span class="hint" data-bind="html: recipientAutocompleteItem() ? sendLinkHintText() : '&nbsp;<br>&nbsp;' "></span>
 				</div>
-				<div class="row" data-bind="visible: password()">
+				<div class="row" data-bind="visible: bAllowSendMessage && password()">
 					<div style="white-space: nowrap;" data-bind="css: {'disabled': !isSigningAvailable()}">
 						<label data-bind="css: {'checked': sign}, enable: isSigningAvailable()" class="custom_checkbox checked">
 							<span class="icon"></span>
@@ -36,7 +37,7 @@
 						<label data-bind="i18n: {'key': '%MODULENAME%/LABEL_SIGN'}, style: {'margin': '5px 0', 'display': 'inline-block'}" for="openpgp-sign"></label>
 					</div>
 				</div>
-				<div class="row" data-bind="visible: password()">
+				<div class="row" data-bind="visible: bAllowSendMessage && password()">
 					<span class="hint" data-bind="text: signEmailHintText"></span>
 				</div>
 			</div>
@@ -45,7 +46,8 @@
 				<!-- ko foreach: addButtons -->
 					<!-- ko template: {name: $data.ViewTemplate, data: $data} --><!-- /ko -->
 				<!-- /ko -->
-				<span class="button remove" data-bind="click: recipientAutocompleteItem() ? sendEmail : false, css: {'disabled': !recipientAutocompleteItem()}">
+				<span class="button remove" data-bind="click: recipientAutocompleteItem() ? sendEmail : false,
+							css: {'disabled': !recipientAutocompleteItem()}, visible: bAllowSendMessage">
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_SEND_EMAIL'}, visible: !isEmailEncryptionAvailable()"></span>
 					<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_SEND_ENCRYPTED_EMAIL'}, visible: isEmailEncryptionAvailable()"></span>
 				</span>

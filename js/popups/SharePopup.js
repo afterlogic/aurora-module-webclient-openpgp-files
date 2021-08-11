@@ -102,6 +102,7 @@ function CSharePopup()
 		}
 	});
 	this.composeMessageWithData = ModulesManager.run('MailWebclient', 'getComposeMessageWithData');
+	this.bAllowSendMessage = !!this.composeMessageWithData;
 
 	this.bAllowShowHistory = !!ShowHistoryPopup;
 	
