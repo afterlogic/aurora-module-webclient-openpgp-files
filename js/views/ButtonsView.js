@@ -15,13 +15,13 @@ let
 /**
  * @constructor
  */
-function СButtonsView()
+function CButtonsView()
 {
 }
 
-СButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
+CButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
 
-СButtonsView.prototype.useFilesViewData = function (oFilesView)
+CButtonsView.prototype.useFilesViewData = function (oFilesView)
 {
 	let selectedItem = oFilesView.selector.itemSelected;
 	this.storageType = oFilesView.storageType;
@@ -71,4 +71,4 @@ function СButtonsView()
 	);
 };
 
-module.exports = new СButtonsView();
+module.exports = new CButtonsView();
