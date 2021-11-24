@@ -66,6 +66,7 @@ CButtonsView.prototype.useFilesViewData = function (oFilesView)
 					|| oFilesView.storageType() === Enums.FileStorageType.Corporate
 					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().IS_FILE
 				)
+				&& (!selectedItem().bSharedWithMe || selectedItem().bSharedWithMeAccessReshare)
 			;
 		}
 	);
