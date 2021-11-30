@@ -1,6 +1,6 @@
 'use strict';
 
-let
+var
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 
@@ -23,53 +23,35 @@ CButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
 
 CButtonsView.prototype.useFilesViewData = function (oFilesView)
 {
-	let selectedItem = oFilesView.selector.itemSelected;
-	this.storageType = oFilesView.storageType;
-	this.secureShareCommand = Utils.createCommand(this,
-		() => {
-			if (selectedItem().published())
-			{
-				Popups.showPopup(SharePopup, [selectedItem()]);
-			}
-			else if (selectedItem().IS_FILE && selectedItem().bIsSecure() && !selectedItem()?.oExtendedProps?.ParanoidKey)
-			{
-				Popups.showPopup(AlertPopup, [TextUtils.i18n('%MODULENAME%/INFO_SHARING_NOT_SUPPORTED'), null, TextUtils.i18n('%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE')]);
-			}
-			else if (selectedItem()?.oExtendedProps?.InitializationVector)
-			{
-				Popups.showPopup(EncryptFilePopup, [
-					selectedItem(),
-					oFilesView
-				]);
-			}
-			else
-			{
-				Popups.showPopup(CreatePublicLinkPopup, [
-					selectedItem(),
-					oFilesView
-				]);
-			}
-		},
-		() => {
-			// Conditions for button activity:
-			// Personal: one file or one folder
-			// Corporate: one file or one folder
-			// Encrypted: one file only
-			// Shared: nothing
-			
-			return selectedItem() !== null
-				&& oFilesView.checkedReadyForOperations() && oFilesView.selector.listCheckedAndSelected().length === 1
-				&& !oFilesView.isZipFolder()
-				&& (!selectedItem().oExtendedProps || !selectedItem().oExtendedProps.PgpEncryptionMode)
-				&& (
-					oFilesView.storageType() === Enums.FileStorageType.Personal
-					|| oFilesView.storageType() === Enums.FileStorageType.Corporate
-					|| oFilesView.storageType() === Enums.FileStorageType.Encrypted && selectedItem().IS_FILE
-				)
-				&& (!selectedItem().bSharedWithMe || selectedItem().bSharedWithMeAccessReshare)
-			;
-		}
-	);
+	this.secureShareCommand = Utils.createCommand(oFilesView, this.executeShare, oFilesView.isShareAllowed);
+};
+
+CButtonsView.prototype.executeShare = function ()
+{
+	// !!! this = oFilesView
+	var
+		oSelectedItem = this.selector.itemSelected(),
+		oExtendedProps = oSelectedItem && oSelectedItem.oExtendedProps || {}
+	;
+	if (oSelectedItem.published()) {
+		Popups.showPopup(SharePopup, [oSelectedItem]);
+	} else if (oSelectedItem.IS_FILE && oSelectedItem.bIsSecure() && !oExtendedProps.ParanoidKey) {
+		Popups.showPopup(AlertPopup, [
+			TextUtils.i18n('%MODULENAME%/INFO_SHARING_NOT_SUPPORTED'),
+			null,
+			TextUtils.i18n('%MODULENAME%/HEADING_SEND_ENCRYPTED_FILE')
+		]);
+	} else if (oExtendedProps.InitializationVector) {
+		Popups.showPopup(EncryptFilePopup, [
+			oSelectedItem,
+			this // oFilesView
+		]);
+	} else {
+		Popups.showPopup(CreatePublicLinkPopup, [
+			oSelectedItem,
+			this // oFilesView
+		]);
+	}
 };
 
 module.exports = new CButtonsView();
