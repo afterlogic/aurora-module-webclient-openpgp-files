@@ -7,6 +7,10 @@
 
 namespace Aurora\Modules\OpenPgpFilesWebclient;
 
+use Afterlogic\DAV\Server;
+use Aurora\Modules\Files\Enums\ErrorCodes;
+use Aurora\System\Exceptions\ApiException;
+
 /**
  * @license https://www.gnu.org/licenses/agpl-3.0.html AGPL-3.0
  * @license https://afterlogic.com/products/common-licensing Afterlogic Software License
@@ -105,6 +109,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			}
 			else
 			{
+				$oNode = Server::getNodeForPath('files/' . $Type . '/' . $Path . '/' . $Name);
+				if ($oNode instanceof \Afterlogic\DAV\FS\Shared\File || $oNode instanceof \Afterlogic\DAV\FS\Shared\Directory) {
+					throw new ApiException(ErrorCodes::NotPermitted);
+				}
 				$aProps = [
 					'UserId' => $oUser->PublicId,
 					'Type' => $Type,
