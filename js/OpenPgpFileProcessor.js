@@ -2,10 +2,10 @@
 
 let
 	_ = require('underscore'),
-	$ = require('jquery'),
 
 	ModulesManager = require('%PathToCoreWebclientModule%/js/ModulesManager.js'),
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
+	Api = require('%PathToCoreWebclientModule%/js/Api.js'),
 	Screens = require('%PathToCoreWebclientModule%/js/Screens.js'),
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
@@ -190,12 +190,12 @@ OpenPgpFileProcessor.createPublicLink = async function (sType, sPath, sFileName,
 		? OpenPgpEncryptor.generatePassword()
 		: '';
 	const oPromiseCreatePublicLink = new Promise( (resolve, reject) => {
-		const fResponseCallback = (oResponse, oRequest) => {
-			if (oResponse.Result && oResponse.Result.link)
-			{
-				resolve(oResponse.Result.link);
+		const fResponseCallback = (response, request) => {
+			if (response.Result && response.Result.link) {
+				resolve(response.Result.link);
 			}
-			reject(new Error(TextUtils.i18n('%MODULENAME%/ERROR_PUBLIC_LINK_CREATION')));
+			var errorText = Api.getErrorByCode(response, TextUtils.i18n('%MODULENAME%/ERROR_PUBLIC_LINK_CREATION'));
+			reject(new Error(errorText));
 		};
 		let oParams = {
 			'Type': sType,
@@ -231,7 +231,7 @@ OpenPgpFileProcessor.createPublicLink = async function (sType, sPath, sFileName,
 	{
 		if (oError && oError.message)
 		{
-			Screens.showError(oError.message);
+			oResult.errorMessage = oError.message;
 		}
 	}
 

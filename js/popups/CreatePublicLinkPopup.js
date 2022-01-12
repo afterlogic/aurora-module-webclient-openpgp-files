@@ -104,7 +104,7 @@ CCreatePublicLinkPopup.prototype.createPublicLink = async function ()
 	}
 	else
 	{
-		Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
+		Screens.showError(oPublicLinkResult.errorMessage || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 	}
 };
 
