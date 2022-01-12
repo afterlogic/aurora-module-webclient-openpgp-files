@@ -9,6 +9,7 @@ namespace Aurora\Modules\OpenPgpFilesWebclient;
 
 use Afterlogic\DAV\Server;
 use Aurora\Modules\Files\Enums\ErrorCodes;
+use Aurora\Modules\Files\Module as FilesModule;
 use Aurora\System\Exceptions\ApiException;
 
 /**
@@ -34,6 +35,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
 		$this->subscribeEvent('Files::DeletePublicLink::after', [$this, 'onAfterDeletePublicLink']);
+
+		$this->aErrors = [
+			ErrorCodes::NotPermitted	=> FilesModule::getInstance()->i18N('INFO_NOTPERMITTED')
+		];
 	}
 
 	private function isUrlFileType($sFileName)
