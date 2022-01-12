@@ -36,9 +36,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
 		$this->subscribeEvent('Files::DeletePublicLink::after', [$this, 'onAfterDeletePublicLink']);
 
-		$this->aErrors = [
-			ErrorCodes::NotPermitted	=> FilesModule::getInstance()->i18N('INFO_NOTPERMITTED')
-		];
+		$oFilesModule = FilesModule::getInstance();
+		if ($oFilesModule) {
+			$this->aErrors = [
+				ErrorCodes::NotPermitted => $oFilesModule->i18N('INFO_NOTPERMITTED')
+			];
+		}
 	}
 
 	private function isUrlFileType($sFileName)
