@@ -214,10 +214,18 @@ CSharePopup.prototype.onCancelSharingResponse = function (oResponse, oRequest)
  */
 CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
-	const fAutocompleteCallback = ModulesManager.run('ContactsWebclient',
-		'getSuggestionsAutocompleteCallback',
-		['all', App.getUserPublicId(), /*bWithGroups*/ false]
-	);
+	const
+		suggestParameters = {
+			storage: 'all',
+			addContactGroups: false,
+			addUserGroups: false,
+			exceptEmail: App.getUserPublicId()
+		},
+		autocompleteCallback = ModulesManager.run(
+			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]
+		)
+	;
+
 	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
 		let aPublicKeys = this.getPublicKeys();
 		let iOwnPublicKeyIndex = aPublicKeys.indexOf(App.getUserPublicId());
@@ -259,10 +267,10 @@ CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 		});
 		fResponse(aRecipienstList);
 	};
-	if (_.isFunction(fAutocompleteCallback))
+	if (_.isFunction(autocompleteCallback))
 	{
 		this.recipientAutocompleteItem(null);
-		fAutocompleteCallback(oRequest, fMarkRecipientsWithKeyCallback);
+		autocompleteCallback(oRequest, fMarkRecipientsWithKeyCallback);
 	}
 };
 
