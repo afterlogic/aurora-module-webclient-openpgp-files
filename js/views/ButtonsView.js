@@ -1,6 +1,8 @@
 'use strict';
 
 var
+	ko = require('knockout'),
+
 	TextUtils = require('%PathToCoreWebclientModule%/js/utils/Text.js'),
 	Utils = require('%PathToCoreWebclientModule%/js/utils/Common.js'),
 
@@ -23,10 +25,21 @@ CButtonsView.prototype.ViewTemplate = '%ModuleName%_ButtonsView';
 
 CButtonsView.prototype.useFilesViewData = function (oFilesView)
 {
-	this.secureShareCommand = Utils.createCommand(oFilesView, this.executeShare, oFilesView.isShareAllowed);
+	this.isCreateSecureLinkAllowed = ko.computed(function () {
+		const
+			items = this.selector.listCheckedAndSelected(),
+			selectedItem = items.length === 1 ? items[0] : null
+		;
+		return !this.isZipFolder() &&
+				(!this.sharedParentFolder() || this.sharedParentFolder().bSharedWithMeAccessReshare) &&
+				this.allSelectedFilesReady() &&
+				selectedItem && !selectedItem.bIsLink &&
+				(!selectedItem.bSharedWithMe || selectedItem.bSharedWithMeAccessReshare);
+	}, oFilesView);
+	this.createSecureLinkCommand = Utils.createCommand(oFilesView, this.createSecureLink, this.isCreateSecureLinkAllowed);
 };
 
-CButtonsView.prototype.executeShare = function ()
+CButtonsView.prototype.createSecureLink = function ()
 {
 	// !!! this = oFilesView
 	var
