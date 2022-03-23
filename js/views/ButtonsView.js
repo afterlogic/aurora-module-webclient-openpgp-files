@@ -31,10 +31,10 @@ CButtonsView.prototype.useFilesViewData = function (oFilesView)
 			selectedItem = items.length === 1 ? items[0] : null
 		;
 		return !this.isZipFolder() &&
-				(!this.sharedParentFolder() || this.sharedParentFolder().bSharedWithMeAccessReshare) &&
+				(!this.sharedParentFolder() || this.sharedParentFolder().sharedWithMeAccessReshare()) &&
 				this.allSelectedFilesReady() &&
 				selectedItem && !selectedItem.bIsLink &&
-				(!selectedItem.bSharedWithMe || selectedItem.bSharedWithMeAccessReshare);
+				(!selectedItem.sharedWithMe() || selectedItem.sharedWithMeAccessReshare());
 	}, oFilesView);
 	this.createSecureLinkCommand = Utils.createCommand(oFilesView, this.createSecureLink, this.isCreateSecureLinkAllowed);
 };
