@@ -195,12 +195,17 @@ EncryptFilePopup.prototype.encrypt = async function ()
  */
 EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
+	if (!this.oFile) {
+		fResponse([]);
+		return;
+	}
+
 	const
 		suggestParameters = {
 			storage: 'all',
 			addContactGroups: false,
 			addUserGroups: false,
-			exceptEmail: App.getUserPublicId()
+			exceptEmail: this.oFile.sOwnerName
 		},
 		autocompleteCallback = ModulesManager.run(
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]

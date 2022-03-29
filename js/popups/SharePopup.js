@@ -214,12 +214,17 @@ CSharePopup.prototype.onCancelSharingResponse = function (oResponse, oRequest)
  */
 CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 {
+	if (!this.item) {
+		fResponse([]);
+		return;
+	}
+
 	const
 		suggestParameters = {
 			storage: 'all',
 			addContactGroups: false,
 			addUserGroups: false,
-			exceptEmail: App.getUserPublicId()
+			exceptEmail: this.item.sOwnerName
 		},
 		autocompleteCallback = ModulesManager.run(
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]
