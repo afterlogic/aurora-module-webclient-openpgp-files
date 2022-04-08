@@ -118,7 +118,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 			else
 			{
 				$oNode = Server::getNodeForPath('files/' . $Type . '/' . $Path . '/' . $Name);
-				if ($oNode instanceof \Afterlogic\DAV\FS\Shared\File || $oNode instanceof \Afterlogic\DAV\FS\Shared\Directory) {
+				if ($oNode instanceof \Afterlogic\DAV\FS\Shared\Directory) {
 					throw new ApiException(ErrorCodes::NotPermitted);
 				}
 				$aProps = [

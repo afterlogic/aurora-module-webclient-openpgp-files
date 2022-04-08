@@ -20,15 +20,19 @@ let OpenPgpFileProcessor = {};
 
 OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode, bSign, sPassphrase)
 {
-	const sPath = oFilesView.currentPath();
-	const sStorageType = oFilesView.storageType();
-	let oResultData = { result: false };
-	const sParanoidEncryptedKey = oFile?.oExtendedProps?.ParanoidKey || '';
-	if (sParanoidEncryptedKey)
+	const
+		sPath = oFilesView.currentPath(),
+		sStorageType = oFilesView.storageType(),
+		oResultData = { result: false },
+		extendedProps = oFile && oFile.oExtendedProps,
+		encryptedParanoidKey = extendedProps &&
+			(oFile.sharedWithMe() ? extendedProps.ParanoidKeyShared : extendedProps.ParanoidKey)
+	;
+	if (encryptedParanoidKey)
 	{
 		//decrypt key
 		let oPGPDecryptionResult = await OpenPgpEncryptor.decryptData(
-			sParanoidEncryptedKey,
+			encryptedParanoidKey,
 			sPassphrase
 		);
 		if (oPGPDecryptionResult.passphrase)
@@ -93,6 +97,8 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 							oResultData.result = true;
 							oResultData.password = sPassword;
 							oResultData.link = oPublicLinkResult.link;
+						} else {
+							Screens.showError(oPublicLinkResult.errorMessage || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 						}
 					}
 					else
@@ -307,7 +313,8 @@ OpenPgpFileProcessor.processFileDecryption = async function (sFileName, sDownloa
 		}
 		else
 		{
-			Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
+			// Error with details is already shown in decryptFile method
+			// Screens.showError(TextUtils.i18n('%MODULENAME%/ERROR_ON_DOWNLOAD'));
 		}
 	}
 	else
