@@ -4,8 +4,8 @@
 	"require": {
 		"php": ">=5.4.0",
 		"afterlogic/aurora-framework": "~0.10.0",
-		"afterlogic/aurora-module-files": "~0.10.0",
-		"afterlogic/aurora-module-webclient-files": "~0.10.0"
+		"afterlogic/aurora-module-files": "dev-sabre-dav-4",
+		"afterlogic/aurora-module-webclient-files": "dev-sabre-dav-4"
 	},
 	"extra": {
 		"installer-name": "OpenPgpFilesWebclient"
