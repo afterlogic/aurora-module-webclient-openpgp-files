@@ -1,18 +1,36 @@
 {
-    "Disabled": [
-		false,
-		"bool"
-	],
-	"EnableSelfDestructingMessages": [
-		true,
-		"bool"
-	],
-	"EnablePublicLinkLifetime": [
-		true,
-		"bool"
-	],
-    "AvailableFor": [
-		["FilesWebclient"],
-		"array"
-	]
+  "Disabled": [
+    false,
+    "bool"
+  ],
+  "Disabled_Description": [
+    "",
+    "string"
+  ],
+  "EnableSelfDestructingMessages": [
+    true,
+    "bool"
+  ],
+  "EnableSelfDestructingMessages_Description": [
+    "",
+    "string"
+  ],
+  "EnablePublicLinkLifetime": [
+    true,
+    "bool"
+  ],
+  "EnablePublicLinkLifetime_Description": [
+    "",
+    "string"
+  ],
+  "AvailableFor": [
+    [
+      "FilesWebclient"
+    ],
+    "array"
+  ],
+  "AvailableFor_Description": [
+    "",
+    "string"
+  ]
 }
