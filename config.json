@@ -4,7 +4,7 @@
 		"bool"
 	],
 	"Disabled_Description": [
-		"",
+		"Setting to true disables the module",
 		"string"
 	],
 	"EnableSelfDestructingMessages": [
@@ -12,7 +12,7 @@
 		"bool"
 	],
 	"EnableSelfDestructingMessages_Description": [
-		"",
+		"Enables feature of self-destructing messages",
 		"string"
 	],
 	"EnablePublicLinkLifetime": [
@@ -20,7 +20,7 @@
 		"bool"
 	],
 	"EnablePublicLinkLifetime_Description": [
-		"",
+		"Enables feature of public link expiration",
 		"string"
 	],
 	"AvailableFor": [
@@ -30,7 +30,7 @@
 		"array"
 	],
 	"AvailableFor_Description": [
-		"",
+		"Automatically provide this feature if one of the listed modules is requested by the entry point",
 		"string"
 	]
 }
