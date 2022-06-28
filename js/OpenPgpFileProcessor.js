@@ -18,7 +18,8 @@ let
 
 let OpenPgpFileProcessor = {};
 
-OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail, bIsPasswordMode, bSign, sPassphrase)
+OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail,
+	contactUUID, bIsPasswordMode, bSign)
 {
 	const
 		sPath = oFilesView.currentPath(),
@@ -30,11 +31,13 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 	;
 	if (encryptedParanoidKey)
 	{
+		let sPassphrase = '';
 		//decrypt key
 		let oPGPDecryptionResult = await OpenPgpEncryptor.decryptData(
 			encryptedParanoidKey,
 			sPassphrase
 		);
+
 		if (oPGPDecryptionResult.passphrase)
 		{
 			// saving passphrase so that it won't be asked again until encrypt popup is closed
@@ -46,7 +49,7 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 			const sKey = oPGPDecryptionResult.result;
 			//encrypt Paranoid key
 			const aPublicKeys = sRecipientEmail && !bIsPasswordMode ?
-				OpenPgpEncryptor.findKeysByEmails([sRecipientEmail], /*bIsPublic*/true)
+				await OpenPgpEncryptor.getPublicKeysByContactsAndEmails([contactUUID], [sRecipientEmail])
 				: [];
 			const oPrivateKey = bSign ? await OpenPgpEncryptor.getCurrentUserPrivateKey() : null;
 			const oPGPEncryptionResult = await OpenPgpEncryptor.encryptData(

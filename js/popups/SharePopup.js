@@ -32,7 +32,6 @@ function CSharePopup()
 	this.password = ko.observable('');
 	this.publicLinkFocus = ko.observable(false);
 	this.isRemovingPublicLink = ko.observable(false);
-	this.keys = ko.observableArray([]);
 	this.recipientAutocomplete = ko.observable('');
 	this.recipientAutocompleteItem = ko.observable(null);
 	this.isEmailEncryptionAvailable = ko.observable(false);
@@ -132,7 +131,6 @@ CSharePopup.prototype.onOpen = async function (oItem)
 		this.publicLinkFocus(true);
 		this.password(this.item.oExtendedProps.PasswordForSharing ? this.item.oExtendedProps.PasswordForSharing : '');
 		await OpenPgpEncryptor.oPromiseInitialised;
-		this.keys(OpenPgpEncryptor.getKeys());
 		this.sUserEmail = App.currentAccountEmail ? App.currentAccountEmail() : '';
 		const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sUserEmail], false);
 		if (aPrivateKeys.length > 0)
@@ -231,59 +229,10 @@ CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 		)
 	;
 
-	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
-		let aPublicKeys = this.getPublicKeys();
-		let iOwnPublicKeyIndex = aPublicKeys.indexOf(App.getUserPublicId());
-		if (iOwnPublicKeyIndex > -1)
-		{//remove own public key from list
-			aPublicKeys.splice(iOwnPublicKeyIndex, 1);
-		}
-		aRecipienstList.forEach(oRecipient => {
-			const iIndex = aPublicKeys.indexOf(oRecipient.email);
-			if (iIndex > -1)
-			{
-				oRecipient.hasKey = true;
-				//remove key from list when recipient is marked
-				aPublicKeys.splice(iIndex, 1);
-			}
-			else
-			{
-				oRecipient.hasKey = false;
-			}
-		});
-		aPublicKeys.forEach(sPublicKey => {
-			let aKeys = OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey);
-			if (aKeys && aKeys[0])
-			{
-				aRecipienstList.push(
-					{
-						label: aKeys[0].getUser(),
-						value: aKeys[0].getUser(),
-						name: aKeys[0].getUser(),
-						email: aKeys[0].getEmail(),
-						frequency: 0,
-						id: 0,
-						team: false,
-						sharedToAll: false,
-						hasKey: true
-					}
-				);
-			}
-		});
-		fResponse(aRecipienstList);
-	};
-	if (_.isFunction(autocompleteCallback))
-	{
+	if (_.isFunction(autocompleteCallback)) {
 		this.recipientAutocompleteItem(null);
-		autocompleteCallback(oRequest, fMarkRecipientsWithKeyCallback);
+		autocompleteCallback(oRequest, fResponse);
 	}
-};
-
-CSharePopup.prototype.getPublicKeys = function ()
-{
-	let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
-
-	return aPublicKeys.map(oKey => oKey.getEmail());
 };
 
 CSharePopup.prototype.sendEmail = async function ()
@@ -312,10 +261,17 @@ CSharePopup.prototype.sendEmail = async function ()
 				}
 			);
 		}
-		const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(sBody, this.recipientAutocompleteItem().email, this.sign(), '', this.sUserEmail);
-		if (OpenPgpResult && OpenPgpResult.result)
+
+		const
+			contactEmail = this.recipientAutocompleteItem().email,
+			contactUUID = this.recipientAutocompleteItem().uuid,
+			encryptResult = await OpenPgpEncryptor.encryptMessage(sBody, contactEmail,
+				this.sign(), '', this.sUserEmail, contactUUID
+			)
+		;
+		if (encryptResult && encryptResult.result)
 		{
-			const sEncryptedBody = OpenPgpResult.result;
+			const sEncryptedBody = encryptResult.result;
 			this.composeMessageWithData({
 				to: this.recipientAutocompleteItem().value,
 				subject: sSubject,
@@ -324,9 +280,9 @@ CSharePopup.prototype.sendEmail = async function ()
 			});
 			this.cancelPopup();
 		}
-		else if (!OpenPgpResult || !OpenPgpResult.userCanceled)
+		else if (!encryptResult || !encryptResult.userCanceled)
 		{
-			ErrorsUtils.showPgpErrorByCode(OpenPgpResult, Enums.PgpAction.Encrypt);
+			ErrorsUtils.showPgpErrorByCode(encryptResult, Enums.PgpAction.Encrypt);
 		}
 	}
 	else

@@ -35,7 +35,6 @@ function SelfDestructingEncryptedMessagePopup()
 	this.passwordBasedEncryptionDisabled = ko.observable(true);
 	this.encryptionAvailable = ko.observable(false);
 	this.isSuccessfullyEncryptedAndUploaded = ko.observable(false);
-	this.keys = ko.observableArray([]);
 	this.encryptionBasedMode = ko.observable('');
 	this.recipientHintText = ko.observable(TextUtils.i18n('%MODULENAME%/HINT_SELECT_RECIPIENT'));
 	this.encryptionModeHintText = ko.observable('');
@@ -169,58 +168,26 @@ _.extendOwn(SelfDestructingEncryptedMessagePopup.prototype, CAbstractPopup.proto
 
 SelfDestructingEncryptedMessagePopup.prototype.PopupTemplate = '%ModuleName%_SelfDestructingEncryptedMessagePopup';
 
-SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, sRecipientEmail, sFromEmail, sSelectedSenderId)
+SelfDestructingEncryptedMessagePopup.prototype.onOpen = async function (sSubject, sPlainText, recipientInfo, sFromEmail, sSelectedSenderId)
 {
 	this.sSubject = sSubject;
 	this.sPlainText = sPlainText;
-	this.sRecipientEmail = sRecipientEmail;
+	this.sRecipientEmail = '';
 	this.sFromEmail = sFromEmail;
 	this.sSelectedSenderId = sSelectedSenderId;
+
+	if (recipientInfo) {
+		this.sRecipientEmail = recipientInfo.email;
+		this.recipientAutocompleteItem(recipientInfo);
+		this.recipientAutocomplete(recipientInfo.value);
+	}
+
 	await OpenPgpEncryptor.oPromiseInitialised;
-	this.keys(OpenPgpEncryptor.getKeys());
 	const aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
-	if (aPrivateKeys.length > 0)
-	{
+	if (aPrivateKeys.length > 0) {
 		this.isPrivateKeyAvailable(true);
-	}
-	else
-	{
+	} else {
 		this.isPrivateKeyAvailable(false);
-	}
-	if (sRecipientEmail)
-	{
-		let aKeys = OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sRecipientEmail);
-		let oRecipient = null;
-		if (aKeys && aKeys[0])
-		{
-			oRecipient = {
-				label: aKeys[0].getUser(),
-				value: aKeys[0].getUser(),
-				name: aKeys[0].getUser(),
-				email: aKeys[0].getEmail(),
-				frequency: 0,
-				id: 0,
-				team: false,
-				sharedToAll: false,
-				hasKey: true
-			};
-		}
-		else
-		{
-			oRecipient = {
-				label: sRecipientEmail,
-				value: sRecipientEmail,
-				name: sRecipientEmail,
-				email: sRecipientEmail,
-				frequency: 0,
-				id: 0,
-				team: false,
-				sharedToAll: false,
-				hasKey: false
-			};
-		}
-		this.recipientAutocompleteItem(oRecipient);
-		this.recipientAutocomplete(oRecipient.value);
 	}
 };
 
@@ -306,16 +273,16 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 				}
 				sBody = TextUtils.i18n(sMessage, oOptions);
 
-				const OpenPgpResult = await OpenPgpEncryptor.encryptMessage(
-					sBody,
-					this.recipientAutocompleteItem().email,
-					this.sign(),
-					this.passphrase(),
-					this.sFromEmail
-				);
-				if (OpenPgpResult && OpenPgpResult.result && !OpenPgpResult.hasErrors())
+				const
+					contactEmail = this.recipientAutocompleteItem().email,
+					contactUUID = this.recipientAutocompleteItem().uuid,
+					encryptResult = await OpenPgpEncryptor.encryptMessage(sBody, contactEmail,
+						this.sign(), this.passphrase(), this.sFromEmail, contactUUID
+					)
+				;
+				if (encryptResult && encryptResult.result && !encryptResult.hasErrors())
 				{
-					const sEncryptedBody = OpenPgpResult.result;
+					const sEncryptedBody = encryptResult.result;
 					this.composeMessageWithData({
 						to: this.recipientAutocompleteItem().value,
 						subject: sSubject,
@@ -327,7 +294,7 @@ SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 				}
 				else
 				{
-					ErrorsUtils.showPgpErrorByCode(OpenPgpResult, Enums.PgpAction.Encrypt);
+					ErrorsUtils.showPgpErrorByCode(encryptResult, Enums.PgpAction.Encrypt);
 				}
 			}
 			else
@@ -389,62 +356,11 @@ SelfDestructingEncryptedMessagePopup.prototype.autocompleteCallback = function (
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]
 		)
 	;
-	const fMarkRecipientsWithKeyCallback = (aRecipienstList) => {
-		let aPublicKeysEmails = this.getPublicKeysEmails();
-		let iOwnPublicKeyIndex = aPublicKeysEmails.indexOf(App.getUserPublicId());
-		if (iOwnPublicKeyIndex > -1)
-		{//remove own public key from list
-			aPublicKeysEmails.splice(iOwnPublicKeyIndex, 1);
-		}
-		aRecipienstList.forEach(oRecipient => {
-			const iIndex = aPublicKeysEmails.indexOf(oRecipient.email);
-			if (iIndex > -1)
-			{
-				oRecipient.hasKey = true;
-				//remove key from list when recipient is marked
-				aPublicKeysEmails.splice(iIndex, 1);
-			}
-			else
-			{
-				oRecipient.hasKey = false;
-			}
-		});
-		aPublicKeysEmails.forEach(sPublicKey => {
-			let
-				bMatchesSearch = this.recipientAutocomplete() === '' || sPublicKey.indexOf(this.recipientAutocomplete()) !== -1,
-				aKeys = bMatchesSearch ? OpenPgpEncryptor.getPublicKeysIfExistsByEmail(sPublicKey) : null
-			;
-			if (aKeys && aKeys[0])
-			{
-				aRecipienstList.push(
-					{
-						label: aKeys[0].getUser(),
-						value: aKeys[0].getUser(),
-						name: aKeys[0].getUser(),
-						email: aKeys[0].getEmail(),
-						frequency: 0,
-						id: 0,
-						team: false,
-						sharedToAll: false,
-						hasKey: true
-					}
-				);
-			}
-		});
-		fResponse(aRecipienstList);
-	};
-	if (_.isFunction(autocompleteCallback))
-	{
+
+	if (_.isFunction(autocompleteCallback)) {
 		this.recipientAutocompleteItem(null);
-		autocompleteCallback(oRequest, fMarkRecipientsWithKeyCallback);
+		autocompleteCallback(oRequest, fResponse);
 	}
-};
-
-SelfDestructingEncryptedMessagePopup.prototype.getPublicKeysEmails = function ()
-{
-	let aPublicKeys = this.keys().filter(oKey => oKey.isPublic());
-
-	return aPublicKeys.map(oKey => oKey.getEmail());
 };
 
 SelfDestructingEncryptedMessagePopup.prototype.createSelfDestrucPublicLink = async function (sSubject, sData, sRecipientEmail, sEncryptionBasedMode, iLifetimeHrs)

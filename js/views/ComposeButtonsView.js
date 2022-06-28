@@ -91,16 +91,18 @@ CComposeButtonsView.prototype.doAfterPopulatingMessage = function (oMessageProps
 
 CComposeButtonsView.prototype.send = function ()
 {
-	if (this.oCompose)
-	{
-		Popups.showPopup(SelfDestructingEncryptedMessagePopup, [
-			this.oCompose.getSubject(),
-			this.oCompose.getPlainText(),
-			this.oCompose.getRecipientEmails()[0] ? this.oCompose.getRecipientEmails()[0] : null,
-			this.oCompose.getFromEmail(),
-			this.oCompose.getSelectedSender()
-		]);
+	if (!this.oCompose) {
+		return;
 	}
+
+	const
+		recipientsInfo = this.oCompose.getRecipientsInfo(),
+		firstRecipientInfo = recipientsInfo.length > 0 ? recipientsInfo[0] : null
+	;
+	Popups.showPopup(SelfDestructingEncryptedMessagePopup, [this.oCompose.getSubject(),
+		this.oCompose.getPlainText(), firstRecipientInfo, this.oCompose.getFromEmail(),
+		this.oCompose.getSelectedSender()
+	]);
 };
 
 /**
