@@ -215,20 +215,20 @@ SelfDestructingEncryptedMessagePopup.prototype.clearPopup = function ()
 SelfDestructingEncryptedMessagePopup.prototype.encrypt = async function ()
 {
 	this.isEncrypting(true);
-	const aEmailForEncrypt = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], true).length > 0
-		? [this.recipientAutocompleteItem().email, this.sFromEmail]
-		: [this.recipientAutocompleteItem().email];
-	let aPublicKeys = OpenPgpEncryptor.findKeysByEmails(aEmailForEncrypt, true);
-	let aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false);
 
-	const OpenPgpResult = await OpenPgpEncryptor.encryptData(
-		this.sPlainText,
-		aPublicKeys,
-		aPrivateKeys,
-		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
-		this.sign(),
-		''
-	);
+	const
+		aEmailForEncrypt = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], true).length > 0
+			? [this.recipientAutocompleteItem().email, this.sFromEmail]
+			: [this.recipientAutocompleteItem().email],
+		contactsUUIDs = [this.recipientAutocompleteItem().uuid],
+		aPublicKeys = await OpenPgpEncryptor.getPublicKeysByContactsAndEmails(contactsUUIDs, aEmailForEncrypt),
+		aPrivateKeys = OpenPgpEncryptor.findKeysByEmails([this.sFromEmail], false),
+		isPasswordBasedEncryption = this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
+		OpenPgpResult = await OpenPgpEncryptor.encryptData(this.sPlainText, aPublicKeys, aPrivateKeys,
+			isPasswordBasedEncryption, this.sign()
+		)
+	;
+
 	if (OpenPgpResult.passphrase)
 	{
 		// saving passphrase so that it won't be asked again until "self-destructing secure email" popup is closed
