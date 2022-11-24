@@ -102,6 +102,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
+			if (empty($Type) || empty($Name) || empty($Size))
+			{
+				throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
+			}
 			$sID = \Aurora\Modules\Min\Module::generateHashId([$oUser->PublicId, $Type, $Path, $Name]);
 			$oMin = \Aurora\Modules\Min\Module::getInstance();
 			$mMin = $oMin->GetMinByID($sID);
