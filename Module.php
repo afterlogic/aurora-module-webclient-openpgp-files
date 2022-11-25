@@ -297,7 +297,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 										$this->aPublicFileData['Data'] =  $aData['Data'];
 										$this->aPublicFileData['PgpEncryptionMode'] =  $aData['PgpEncryptionMode'];
 										$this->aPublicFileData['RecipientEmail'] =  $aData['RecipientEmail'];
-										$this->aPublicFileData['ExpireDate'] = isset($aData['expire_date']) ? $aData['expire_date'] : null;
+										$this->aPublicFileData['ExpireDate'] = isset($aData['ExpireDate']) ? $aData['ExpireDate'] : null;
 									}
 									else if ($bIsEncyptedFile)
 									{
@@ -335,7 +335,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 										$this->aPublicFileData['Size'] =  \Aurora\System\Utils::GetFriendlySize($aData['Size']);
 										$this->aPublicFileData['Name'] =  $aData['Name'];
 										$this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
-										$this->aPublicFileData['ExpireDate'] = isset($aData['expire_date']) ? $aData['expire_date'] : null;
+										$this->aPublicFileData['ExpireDate'] = isset($aData['ExpireDate']) ? $aData['ExpireDate'] : null;
 									}
 									$mResult = \strtr(
 										$sResult,
