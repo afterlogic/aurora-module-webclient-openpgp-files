@@ -7,6 +7,9 @@
 		"afterlogic/aurora-module-files": "~0.10.0",
 		"afterlogic/aurora-module-webclient-files": "~0.10.0"
 	},
+	"autoload": {
+		"classmap": ["/"]
+	},
 	"extra": {
 		"installer-name": "OpenPgpFilesWebclient"
 	}
