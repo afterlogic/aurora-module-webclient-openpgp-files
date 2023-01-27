@@ -102,7 +102,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 		$oUser = \Aurora\System\Api::getAuthenticatedUser();
 		if ($oUser instanceof \Aurora\Modules\Core\Models\User)
 		{
-			if (empty($Type) || empty($Name) || empty($Size))
+			if (empty($Type) || empty($Name))
 			{
 				throw new \Aurora\System\Exceptions\ApiException(\Aurora\System\Notifications::InvalidInputParameter);
 			}
