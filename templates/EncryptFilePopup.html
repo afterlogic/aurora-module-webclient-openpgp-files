@@ -24,6 +24,13 @@
 						<span class="hint" data-bind="text: recipientHintText"></span>
 					</div>
 					<br>
+					<div class="row" data-bind="visible: allowLifetime">
+						<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_LINK_LIFETIME'}"></span>
+						<span class="value">
+							<select class="value input" data-bind="options: lifetime, optionsText: 'label', optionsValue: 'value', value: selectedLifetimeHrs "></select>
+						</span>
+					</div>
+					<br data-bind="visible: allowLifetime" />
 					<div class="row">
 						<span class="label" data-bind="i18n: {'key': '%MODULENAME%/LABEL_ENCRYPTION_TYPE'}"></span>
 						<span class="value">

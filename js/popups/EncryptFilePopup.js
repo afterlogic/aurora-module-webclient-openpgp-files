@@ -123,6 +123,27 @@ function EncryptFilePopup()
 		return TextUtils.i18n('%MODULENAME%/HINT_NOT_SIGN_FILE');
 	}, this);
 	this.addButtons = ko.observableArray([]);
+
+	this.allowLifetime = Settings.EnablePublicLinkLifetime;
+	this.selectedLifetimeHrs = ko.observable(null);
+	this.lifetime = ko.observableArray([
+		{
+			label: TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_ETERNAL'),
+			value: 0
+		},
+		{
+			label: "24 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_HOURS'),
+			value: 24
+		},
+		{
+			label: "72 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_HOURS'),
+			value: 72
+		},
+		{
+			label: "7 " + TextUtils.i18n('%MODULENAME%/OPTION_LIFE_TIME_DAYS'),
+			value: 7 * 24
+		}
+	]);
 }
 
 _.extendOwn(EncryptFilePopup.prototype, CAbstractPopup.prototype);
@@ -165,6 +186,7 @@ EncryptFilePopup.prototype.clearPopup = function ()
 	this.passphrase('');
 	this.sign(false);
 	this.sUserEmail = '';
+	this.selectedLifetimeHrs(null);
 };
 
 EncryptFilePopup.prototype.encrypt = async function ()
@@ -176,7 +198,8 @@ EncryptFilePopup.prototype.encrypt = async function ()
 		this.recipientAutocompleteItem() ? this.recipientAutocompleteItem().email : '',
 		this.recipientAutocompleteItem() ? this.recipientAutocompleteItem().uuid : '',
 		this.encryptionBasedMode() === Enums.EncryptionBasedOn.Password,
-		this.sign()
+		this.sign(),
+		this.selectedLifetimeHrs(),
 	);
 	this.isEncrypting(false);
 	if (this.sign() && oResult.result && oResult.passphrase)

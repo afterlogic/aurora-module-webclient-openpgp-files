@@ -26,9 +26,7 @@ function CCreatePublicLinkPopup()
 	this.isFolder = ko.observable(false);
 	this.oFilesView = null;
 	this.encryptPublicLink = ko.observable(false);
-	this.allowLifetime = ko.computed(function () {
-		return Settings.EnablePublicLinkLifetime && this.encryptPublicLink();
-	}, this);
+	this.allowLifetime = Settings.EnablePublicLinkLifetime;
 	this.isCreatingPublicLink = ko.observable(false);
 	this.selectedLifetimeHrs = ko.observable(null);
 	this.lifetime = ko.observableArray([

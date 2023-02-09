@@ -19,7 +19,7 @@ let
 let OpenPgpFileProcessor = {};
 
 OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, sRecipientEmail,
-	contactUUID, bIsPasswordMode, bSign)
+	contactUUID, bIsPasswordMode, bSign, iLifetimeHrs = 0)
 {
 	const
 		sPath = oFilesView.currentPath(),
@@ -92,7 +92,8 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 							oFile.size(),
 							false,
 							sRecipientEmail,
-							bIsPasswordMode ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key
+							bIsPasswordMode ? Enums.EncryptionBasedOn.Password : Enums.EncryptionBasedOn.Key,
+							iLifetimeHrs
 						);
 						if (oPublicLinkResult.result)
 						{
