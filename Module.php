@@ -23,12 +23,16 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 {
     private $aPublicFileData = null;
 
+    private $aHashes = [];
+
     public function init()
     {
         $this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
         $this->subscribeEvent('Files::PopulateFileItem::after', array($this, 'onAfterPopulateFileItem'));
         $this->subscribeEvent('Files::CheckUrl', array($this, 'onCheckUrl'), 90);
         $this->subscribeEvent('Files::DeletePublicLink::after', [$this, 'onAfterDeletePublicLink']);
+        $this->subscribeEvent('Min::DeleteExpiredHashes::before', [$this, 'onBeforeDeleteExpiredHashes']);
+        $this->subscribeEvent('Min::DeleteExpiredHashes::after', [$this, 'onAfterDeleteExpiredHashes']);
 
         $oFilesModule = FilesModule::getInstance();
         if ($oFilesModule) {
@@ -296,6 +300,21 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                         $this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
                                         $this->aPublicFileData['ExpireDate'] = isset($aData['ExpireDate']) ? $aData['ExpireDate'] : null;
                                     }
+
+                                    if (isset($this->aPublicFileData['ExpireDate'])) {
+                                        $iExpireDate = (int) $this->aPublicFileData['ExpireDate'];
+                                        if ($iExpireDate > 0 && time() > $iExpireDate) {
+                                            $oModuleManager = \Aurora\System\Api::GetModuleManager();
+                                            $sTheme = $oModuleManager->getModuleConfigValue('CoreWebclient', 'Theme');
+                                            $sResult = \file_get_contents($this->GetPath().'/templates/Expired.html');
+                                            $mResult = \strtr($sResult, array(
+                                                '{{Expired}}' => $this->i18N('INFO_EXPIRED'),
+                                                '{{Theme}}' => $sTheme,
+                                            ));
+                                            return;
+                                        }
+                                    }
+
                                     $mResult = \strtr(
                                         $sResult,
                                         [
@@ -364,5 +383,30 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             $aArgs['Name'],
             ['ParanoidKeyPublic' => null]
         );
+    }
+
+    public function onBeforeDeleteExpiredHashes(&$aArgs, &$mResult) 
+    {
+        $this->aHashes = [];
+        if (isset($aArgs['Time']) && $aArgs['Time'] > 0) {
+            $this->aHashes = \Aurora\Modules\Min\Models\MinHash::whereNotNull('ExpireDate')->where('ExpireDate', '<=', $aArgs['Time'])->get()->toArray();
+        }
+    }
+
+    public function onAfterDeleteExpiredHashes(&$aArgs, &$mResult) 
+    {
+        foreach ($this->aHashes as $hash) {
+            $data = \json_decode($hash['Data'], true);
+            if (isset($data['UserId'], $data['Type'], $data['Path'], $data['Name'])) {
+                \Aurora\Modules\Files\Module::Decorator()->UpdateExtendedProps(
+                    $data['UserId'],
+                    $data['Type'],
+                    $data['Path'],
+                    $data['Name'],
+                    ['ParanoidKeyPublic' => null]
+                );
+            }
+        }
+        $this->aHashes = [];
     }
 }
