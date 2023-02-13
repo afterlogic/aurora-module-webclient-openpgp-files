@@ -208,7 +208,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function onFileEntryPub(&$aData, &$mResult)
     {
         if ($aData && isset($aData['UserId'])) {
-
             if (isset($aData['ExpireDate'])) {
                 $iExpireDate = (int) $aData['ExpireDate'];
                 if ($iExpireDate > 0 && time() > $iExpireDate) {
@@ -386,7 +385,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         );
     }
 
-    public function onBeforeDeleteExpiredHashes(&$aArgs, &$mResult) 
+    public function onBeforeDeleteExpiredHashes(&$aArgs, &$mResult)
     {
         $this->aHashes = [];
         if (isset($aArgs['Time']) && $aArgs['Time'] > 0) {
@@ -394,7 +393,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         }
     }
 
-    public function onAfterDeleteExpiredHashes(&$aArgs, &$mResult) 
+    public function onAfterDeleteExpiredHashes(&$aArgs, &$mResult)
     {
         foreach ($this->aHashes as $hash) {
             $data = \json_decode($hash['Data'], true);
