@@ -216,7 +216,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                     $sTheme = $oModuleManager->getModuleConfigValue('CoreWebclient', 'Theme');
                     $sResult = \file_get_contents($this->GetPath().'/templates/Expired.html');
                     $mResult = \strtr($sResult, array(
-                        '{{Expired}}' => $this->i18N('INFO_EXPIRED'),
+                        '{{Expired}}' => $this->i18N('HINT_MESSAGE_LINK_EXPIRED'),
                         '{{Theme}}' => $sTheme,
                     ));
                     return;
