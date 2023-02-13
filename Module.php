@@ -208,6 +208,21 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function onFileEntryPub(&$aData, &$mResult)
     {
         if ($aData && isset($aData['UserId'])) {
+
+            if (isset($aData['ExpireDate'])) {
+                $iExpireDate = (int) $aData['ExpireDate'];
+                if ($iExpireDate > 0 && time() > $iExpireDate) {
+                    $oModuleManager = \Aurora\System\Api::GetModuleManager();
+                    $sTheme = $oModuleManager->getModuleConfigValue('CoreWebclient', 'Theme');
+                    $sResult = \file_get_contents($this->GetPath().'/templates/Expired.html');
+                    $mResult = \strtr($sResult, array(
+                        '{{Expired}}' => $this->i18N('INFO_EXPIRED'),
+                        '{{Theme}}' => $sTheme,
+                    ));
+                    return;
+                }
+            }
+
             $bLinkOrFile = isset($aData['IsFolder']) && !$aData['IsFolder'] && isset($aData['Name']) && isset($aData['Type']) && isset($aData['Path']);
             $bSelfDestructingEncryptedMessage = isset($aData['Subject']) && isset($aData['Data']) && isset($aData['PgpEncryptionMode']) && isset($aData['RecipientEmail']);
             if ($bLinkOrFile || $bSelfDestructingEncryptedMessage) {
@@ -299,20 +314,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                         $this->aPublicFileData['Name'] =  $aData['Name'];
                                         $this->aPublicFileData['IsSecuredLink'] = isset($aData['Password']);
                                         $this->aPublicFileData['ExpireDate'] = isset($aData['ExpireDate']) ? $aData['ExpireDate'] : null;
-                                    }
-
-                                    if (isset($this->aPublicFileData['ExpireDate'])) {
-                                        $iExpireDate = (int) $this->aPublicFileData['ExpireDate'];
-                                        if ($iExpireDate > 0 && time() > $iExpireDate) {
-                                            $oModuleManager = \Aurora\System\Api::GetModuleManager();
-                                            $sTheme = $oModuleManager->getModuleConfigValue('CoreWebclient', 'Theme');
-                                            $sResult = \file_get_contents($this->GetPath().'/templates/Expired.html');
-                                            $mResult = \strtr($sResult, array(
-                                                '{{Expired}}' => $this->i18N('INFO_EXPIRED'),
-                                                '{{Theme}}' => $sTheme,
-                                            ));
-                                            return;
-                                        }
                                     }
 
                                     $mResult = \strtr(
