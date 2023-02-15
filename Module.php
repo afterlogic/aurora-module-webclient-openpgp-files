@@ -33,6 +33,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         $this->subscribeEvent('Files::DeletePublicLink::after', [$this, 'onAfterDeletePublicLink']);
         $this->subscribeEvent('Min::DeleteExpiredHashes::before', [$this, 'onBeforeDeleteExpiredHashes']);
         $this->subscribeEvent('Min::DeleteExpiredHashes::after', [$this, 'onAfterDeleteExpiredHashes']);
+        $this->subscribeEvent('Files::GetPublicFiles::before', [$this, 'onBeforeGetPublicFiles']);
+        $this->subscribeEvent('System::RunEntry::before', array($this, 'onBeforeRunEntry'));
 
         $oFilesModule = FilesModule::getInstance();
         if ($oFilesModule) {
@@ -408,5 +410,46 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             }
         }
         $this->aHashes = [];
+    }
+
+    public function onBeforeGetPublicFiles(&$aArgs, &$mResult)
+    {
+        $oMinDecorator =  \Aurora\Api::GetModuleDecorator('Min');
+        if ($oMinDecorator) {
+            $mMin = $oMinDecorator->GetMinByHash($aArgs['Hash']);
+            if (!empty($mMin['__hash__'])) {
+                if (isset($mMin['ExpireDate'])) {
+                    $iExpireDate = (int) $mMin['ExpireDate'];
+                    if ($iExpireDate > 0 && time() > $iExpireDate) {
+                        $mResult = false;
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    public function onBeforeRunEntry(&$aArgs, &$mResult)
+    {
+        if (isset($aArgs['EntryName']) && strtolower($aArgs['EntryName']) === 'download-file') {
+
+            $sHash = (string) \Aurora\System\Router::getItemByIndex(1, '');
+            $aValues = \Aurora\System\Api::DecodeKeyValues($sHash);
+            if (isset($aValues['PublicHash'])) {
+                $oMinDecorator =  \Aurora\Api::GetModuleDecorator('Min');
+                if ($oMinDecorator) {
+                    $mMin = $oMinDecorator->GetMinByHash($aValues['PublicHash']);
+                    if (!empty($mMin['__hash__'])) {
+                        if (isset($mMin['ExpireDate'])) {
+                            $iExpireDate = (int) $mMin['ExpireDate'];
+                            if ($iExpireDate > 0 && time() > $iExpireDate) {
+                                $this->oHttp->StatusHeader(403);
+                                exit();
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
