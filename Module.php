@@ -25,6 +25,9 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
     private $aHashes = [];
 
+    /** @var \Aurora\Modules\Files\Module */
+    private $oFilesdecorator = null;
+
     public function init()
     {
         $this->subscribeEvent('FileEntryPub', array($this, 'onFileEntryPub'));
@@ -42,6 +45,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                 ErrorCodes::NotPermitted => $oFilesModule->i18N('INFO_NOTPERMITTED')
             ];
         }
+
+        $this->oFilesdecorator = \Aurora\System\Api::GetModuleDecorator('Files');
     }
 
     private function isUrlFileType($sFileName)
@@ -228,8 +233,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             $bSelfDestructingEncryptedMessage = isset($aData['Subject']) && isset($aData['Data']) && isset($aData['PgpEncryptionMode']) && isset($aData['RecipientEmail']);
             if ($bLinkOrFile || $bSelfDestructingEncryptedMessage) {
                 $bIsUrlFile = isset($aData['Name']) ? $this->isUrlFileType($aData['Name']) : false;
-                ;
-                $oUser = \Aurora\System\Api::GetModuleDecorator('Core')->GetUserByPublicId($aData['UserId']);
+                
+                /** @var \Aurora\Modules\Core\Module $oCoreDecorator */
+                $oCoreDecorator = \Aurora\System\Api::GetModuleDecorator('Core');
+                $oUser = $oCoreDecorator->GetUserByPublicId($aData['UserId']);
                 if ($oUser) {
                     $bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 
@@ -241,7 +248,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                     $sType = isset($aData['Type']) ? $aData['Type'] : '';
                     $sPath = isset($aData['Path']) ? $aData['Path'] : '';
                     $sName = isset($aData['Name']) ? $aData['Name'] : '';
-                    $aFileInfo = \Aurora\System\Api::GetModuleDecorator('Files')->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
+                    
+                    $aFileInfo = $this->oFilesdecorator->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
 
                     \Aurora\System\Api::SetUserSession($aCurSession);
 
@@ -294,7 +302,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                         $this->aPublicFileData['ParanoidKeyPublic'] = $aFileInfo->ExtendedProps['ParanoidKeyPublic'];
                                         $this->aPublicFileData['InitializationVector'] = $aFileInfo->ExtendedProps['InitializationVector'];
                                     } elseif ($bIsUrlFile) {
-                                        $mFile = \Aurora\System\Api::GetModuleDecorator('Files')->getRawFileData($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name'], $aData['__hash__'], 'view');
+                                        $mFile = $this->oFilesdecorator->getRawFileData($aData['UserId'], $aData['Type'], $aData['Path'], $aData['Name'], $aData['__hash__'], 'view');
                                         if (\is_resource($mFile)) {
                                             $mFile = \stream_get_contents($mFile);
                                         }
@@ -320,6 +328,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                     $mResult = \strtr(
                                         $sResult,
                                         [
+                                            // @phpstan-ignore-next-line
                                             '{{AppVersion}}' => AU_APP_VERSION,
                                             '{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
                                             '{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
@@ -391,6 +400,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     {
         $this->aHashes = [];
         if (isset($aArgs['Time']) && $aArgs['Time'] > 0) {
+            // @phpstan-ignore-next-line
             $this->aHashes = \Aurora\Modules\Min\Models\MinHash::whereNotNull('ExpireDate')->where('ExpireDate', '<=', $aArgs['Time'])->get()->toArray();
         }
     }
@@ -414,6 +424,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
 
     public function onBeforeGetPublicFiles(&$aArgs, &$mResult)
     {
+        /** @var \Aurora\Modules\Min\Module $oMinDecorator */
         $oMinDecorator =  \Aurora\Api::GetModuleDecorator('Min');
         if ($oMinDecorator) {
             $mMin = $oMinDecorator->GetMinByHash($aArgs['Hash']);
@@ -436,6 +447,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             $sHash = (string) \Aurora\System\Router::getItemByIndex(1, '');
             $aValues = \Aurora\System\Api::DecodeKeyValues($sHash);
             if (isset($aValues['PublicHash'])) {
+                /** @var \Aurora\Modules\Min\Module $oMinDecorator */
                 $oMinDecorator =  \Aurora\Api::GetModuleDecorator('Min');
                 if ($oMinDecorator) {
                     $mMin = $oMinDecorator->GetMinByHash($aValues['PublicHash']);
