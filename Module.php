@@ -49,6 +49,15 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         $this->oFilesdecorator = \Aurora\System\Api::GetModuleDecorator('Files');
     }
 
+    /**
+     *
+     * @return Module
+     */
+    public static function Decorator()
+    {
+        return parent::Decorator();
+    }
+
     private function isUrlFileType($sFileName)
     {
         return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), ['url']);
@@ -233,7 +242,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             $bSelfDestructingEncryptedMessage = isset($aData['Subject']) && isset($aData['Data']) && isset($aData['PgpEncryptionMode']) && isset($aData['RecipientEmail']);
             if ($bLinkOrFile || $bSelfDestructingEncryptedMessage) {
                 $bIsUrlFile = isset($aData['Name']) ? $this->isUrlFileType($aData['Name']) : false;
-                
+
                 /** @var \Aurora\Modules\Core\Module $oCoreDecorator */
                 $oCoreDecorator = \Aurora\System\Api::GetModuleDecorator('Core');
                 $oUser = $oCoreDecorator->GetUserByPublicId($aData['UserId']);
@@ -248,7 +257,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                     $sType = isset($aData['Type']) ? $aData['Type'] : '';
                     $sPath = isset($aData['Path']) ? $aData['Path'] : '';
                     $sName = isset($aData['Name']) ? $aData['Name'] : '';
-                    
+
                     $aFileInfo = $this->oFilesdecorator->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
 
                     \Aurora\System\Api::SetUserSession($aCurSession);
@@ -443,7 +452,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function onBeforeRunEntry(&$aArgs, &$mResult)
     {
         if (isset($aArgs['EntryName']) && strtolower($aArgs['EntryName']) === 'download-file') {
-
             $sHash = (string) \Aurora\System\Router::getItemByIndex(1, '');
             $aValues = \Aurora\System\Api::DecodeKeyValues($sHash);
             if (isset($aValues['PublicHash'])) {
