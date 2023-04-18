@@ -58,6 +58,15 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         return parent::Decorator();
     }
 
+    /**
+     *
+     * @return Settings
+     */
+    protected function GetModuleSettings()
+    {
+        return $this->oModuleSettings;
+    }
+
     private function isUrlFileType($sFileName)
     {
         return in_array(pathinfo($sFileName, PATHINFO_EXTENSION), ['url']);
