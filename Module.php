@@ -81,10 +81,11 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
+        $oSettings = $this->GetModuleSettings();
 
         $aSettings = array(
-            'EnableSelfDestructingMessages' => $this->getConfig('EnableSelfDestructingMessages', false),
-            'EnablePublicLinkLifetime' => $this->getConfig('EnablePublicLinkLifetime', false),
+            'EnableSelfDestructingMessages' => $oSettings->EnableSelfDestructingMessages,
+            'EnablePublicLinkLifetime' => $oSettings->EnablePublicLinkLifetime,
         );
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
@@ -301,7 +302,9 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                 //passing data to AppData throughGetSettings. GetSettings will be called in $oApiIntegrator->buildBody
                                 $oFilesWebclientModule = \Aurora\System\Api::GetModule('FilesWebclient');
                                 if ($oFilesWebclientModule instanceof \Aurora\System\Module\AbstractModule) {
-                                    $sUrl = (bool) $oFilesWebclientModule->getConfig('ServerUseUrlRewrite', false) ? '/download/' : '?/files-pub/';
+                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->GetModuleSettings();
+
+                                    $sUrl = (bool) $oFilesWebclientModuleSettings->ServerUseUrlRewrite ? '/download/' : '?/files-pub/';
                                     $this->aPublicFileData = [
                                         'Url'	=> $sUrl . $aData['__hash__'],
                                         'Hash'	=> $aData['__hash__']
