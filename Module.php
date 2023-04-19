@@ -83,11 +83,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-        $oSettings = $this->getModuleSettings();
 
         $aSettings = array(
-            'EnableSelfDestructingMessages' => $oSettings->EnableSelfDestructingMessages,
-            'EnablePublicLinkLifetime' => $oSettings->EnablePublicLinkLifetime,
+            'EnableSelfDestructingMessages' => $this->oModuleSettings->EnableSelfDestructingMessages,
+            'EnablePublicLinkLifetime' => $this->oModuleSettings->EnablePublicLinkLifetime,
         );
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
@@ -302,12 +301,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                     )
                                 ];
                                 //passing data to AppData throughGetSettings. GetSettings will be called in $oApiIntegrator->buildBody
-                                // @var Aurora\Modules\FilesWebclient $oFilesWebclientModule
+                                /** @var \Aurora\Modules\FilesWebclient\Module $oFilesWebclientModule */
                                 $oFilesWebclientModule = \Aurora\System\Api::GetModule('FilesWebclient');
                                 if ($oFilesWebclientModule) {
-                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->GetModuleSettings();
-
-                                    $sUrl = (bool) $oFilesWebclientModuleSettings->ServerUseUrlRewrite ? '/download/' : '?/files-pub/';
+                                    $sUrl = (bool) $oFilesWebclientModule->oModuleSettings->ServerUseUrlRewrite ? '/download/' : '?/files-pub/';
                                     $this->aPublicFileData = [
                                         'Url'	=> $sUrl . $aData['__hash__'],
                                         'Hash'	=> $aData['__hash__']
