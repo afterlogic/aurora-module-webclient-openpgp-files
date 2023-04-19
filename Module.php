@@ -62,7 +62,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
      *
      * @return Settings
      */
-    protected function GetModuleSettings()
+    public function getModuleSettings()
     {
         return $this->oModuleSettings;
     }
@@ -81,7 +81,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     public function GetSettings()
     {
         \Aurora\System\Api::checkUserRoleIsAtLeast(\Aurora\System\Enums\UserRole::Anonymous);
-        $oSettings = $this->GetModuleSettings();
+        $oSettings = $this->getModuleSettings();
 
         $aSettings = array(
             'EnableSelfDestructingMessages' => $oSettings->EnableSelfDestructingMessages,
@@ -302,7 +302,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                 //passing data to AppData throughGetSettings. GetSettings will be called in $oApiIntegrator->buildBody
                                 $oFilesWebclientModule = \Aurora\System\Api::GetModule('FilesWebclient');
                                 if ($oFilesWebclientModule instanceof \Aurora\System\Module\AbstractModule) {
-                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->GetModuleSettings();
+                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->getModuleSettings();
 
                                     $sUrl = (bool) $oFilesWebclientModuleSettings->ServerUseUrlRewrite ? '/download/' : '?/files-pub/';
                                     $this->aPublicFileData = [
