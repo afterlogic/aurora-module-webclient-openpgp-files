@@ -300,9 +300,10 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                     )
                                 ];
                                 //passing data to AppData throughGetSettings. GetSettings will be called in $oApiIntegrator->buildBody
+                                // @var Aurora\Modules\FilesWebclient $oFilesWebclientModule
                                 $oFilesWebclientModule = \Aurora\System\Api::GetModule('FilesWebclient');
-                                if ($oFilesWebclientModule instanceof \Aurora\System\Module\AbstractModule) {
-                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->getModuleSettings();
+                                if ($oFilesWebclientModule) {
+                                    $oFilesWebclientModuleSettings = $oFilesWebclientModule->GetModuleSettings();
 
                                     $sUrl = (bool) $oFilesWebclientModuleSettings->ServerUseUrlRewrite ? '/download/' : '?/files-pub/';
                                     $this->aPublicFileData = [
