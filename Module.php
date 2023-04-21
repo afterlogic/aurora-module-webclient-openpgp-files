@@ -295,7 +295,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                             $sResult = \file_get_contents($oCoreClientModule->GetPath().'/templates/Index.html');
                             if (\is_string($sResult)) {
                                 $oSettings =& \Aurora\System\Api::GetSettings();
-                                $sFrameOptions = $oSettings->GetValue('XFrameOptions', '');
+                                $sFrameOptions = $oSettings->XFrameOptions;
                                 if (0 < \strlen($sFrameOptions)) {
                                     @\header('X-Frame-Options: '.$sFrameOptions);
                                 }
