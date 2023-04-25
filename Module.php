@@ -355,8 +355,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                                     $mResult = \strtr(
                                         $sResult,
                                         [
-                                            // @phpstan-ignore-next-line
-                                            '{{AppVersion}}' => AU_APP_VERSION,
+                                            '{{AppVersion}}' => \Aurora\System\Application::GetVersion(),
                                             '{{IntegratorDir}}' => $oApiIntegrator->isRtl() ? 'rtl' : 'ltr',
                                             '{{IntegratorLinks}}' => $oApiIntegrator->buildHeadersLink(),
                                             '{{IntegratorBody}}' => $oApiIntegrator->buildBody($aConfig)
@@ -427,7 +426,6 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     {
         $this->aHashes = [];
         if (isset($aArgs['Time']) && $aArgs['Time'] > 0) {
-            // @phpstan-ignore-next-line
             $this->aHashes = \Aurora\Modules\Min\Models\MinHash::whereNotNull('ExpireDate')->where('ExpireDate', '<=', $aArgs['Time'])->get()->toArray();
         }
     }
