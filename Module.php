@@ -96,8 +96,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         );
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
-            if (isset($oUser->{self::GetName().'::EnableModule'})) {
-                $aSettings['EnableModule'] = $oUser->{self::GetName().'::EnableModule'};
+            if (null !== $oUser->getExtendedProp(self::GetName().'::EnableModule')) {
+                $aSettings['EnableModule'] = $oUser->getExtendedProp(self::GetName().'::EnableModule');
             }
         }
         if ($this->aPublicFileData) {
