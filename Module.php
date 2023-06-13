@@ -23,6 +23,10 @@ use Aurora\System\Exceptions\ApiException;
  */
 class Module extends \Aurora\System\Module\AbstractWebclientModule
 {
+    protected $aRequireModules = array(
+        'Files'
+    );
+
     private $aPublicFileData = null;
 
     private $aHashes = [];
