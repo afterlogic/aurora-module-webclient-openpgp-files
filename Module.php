@@ -430,7 +430,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
     {
         $this->aHashes = [];
         if (isset($aArgs['Time']) && $aArgs['Time'] > 0) {
-            $this->aHashes = \Aurora\Modules\Min\Models\MinHash::whereNotNull('ExpireDate')->where('ExpireDate', '<=', $aArgs['Time'])->get()->toArray();
+            $this->aHashes = \Aurora\Modules\Min\Models\MinHash::whereNotNull('ExpireDate')->where('ExpireDate', '<=', $aArgs['Time'])->get()->all();
         }
     }
 
