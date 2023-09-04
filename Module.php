@@ -142,8 +142,11 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
             $sID = \Aurora\Modules\Min\Module::generateHashId([$oUser->PublicId, $Type, $Path, $Name]);
             $oMin = \Aurora\Modules\Min\Module::getInstance();
             $mMin = $oMin->GetMinByID($sID);
-            if (!empty($mMin['__hash__'])) {
+            if (!empty($mMin['__hash__']) && $mMin['UserId'] && $mMin['UserId'] === $oUser->PublicId) {
                 $mResult['link'] = '?/files-pub/' . $mMin['__hash__'] . '/list';
+                if (!empty($mMin['Password'])) {
+                    $mResult['password'] = \Aurora\System\Utils::DecryptValue($mMin['Password']);
+                }
             } else {
                 $oNode = Server::getNodeForPath('files/' . $Type . '/' . $Path . '/' . $Name);
                 if ($oNode instanceof \Afterlogic\DAV\FS\Shared\Directory) {
@@ -184,6 +187,9 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                 $mMin = $oMin->GetMinByHash($sHash);
                 if (!empty($mMin['__hash__'])) {
                     $mResult['link'] = '?/files-pub/' . $mMin['__hash__'] . '/list';
+                    if (!empty($mMin['Password'])) {
+                        $mResult['password'] = \Aurora\System\Utils::DecryptValue($mMin['Password']);
+                    }
                 }
             }
         }

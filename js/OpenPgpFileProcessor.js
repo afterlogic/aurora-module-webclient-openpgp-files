@@ -202,7 +202,7 @@ OpenPgpFileProcessor.createPublicLink = async function (sType, sPath, sFileName,
 	const oPromiseCreatePublicLink = new Promise( (resolve, reject) => {
 		const fResponseCallback = (response, request) => {
 			if (response.Result && response.Result.link) {
-				resolve(response.Result.link);
+				resolve(response.Result);
 			}
 			var errorText = Api.getErrorByCode(response, TextUtils.i18n('%MODULENAME%/ERROR_PUBLIC_LINK_CREATION'));
 			reject(new Error(errorText));
@@ -232,10 +232,10 @@ OpenPgpFileProcessor.createPublicLink = async function (sType, sPath, sFileName,
 	});
 	try
 	{
-		sLink = await oPromiseCreatePublicLink;
+		const oLinkData = await oPromiseCreatePublicLink;
 		oResult.result = true;
-		oResult.link = sLink;
-		oResult.password = sPassword;
+		oResult.link = oLinkData?.link || '';
+		oResult.password = oLinkData?.password || sPassword;
 	}
 	catch (oError)
 	{
