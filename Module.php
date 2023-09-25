@@ -100,8 +100,8 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         );
         $oUser = \Aurora\System\Api::getAuthenticatedUser();
         if ($oUser && $oUser->isNormalOrTenant()) {
-            if (null !== $oUser->getExtendedProp(self::GetName().'::EnableModule')) {
-                $aSettings['EnableModule'] = $oUser->getExtendedProp(self::GetName().'::EnableModule');
+            if (null !== $oUser->getExtendedProp(self::GetName() . '::EnableModule')) {
+                $aSettings['EnableModule'] = $oUser->getExtendedProp(self::GetName() . '::EnableModule');
             }
         }
         if ($this->aPublicFileData) {
@@ -119,7 +119,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
         if ($oUser) {
             if ($oUser->isNormalOrTenant()) {
                 $oCoreDecorator = \Aurora\Modules\Core\Module::Decorator();
-                $oUser->setExtendedProp(self::GetName().'::EnableModule', $EnableModule);
+                $oUser->setExtendedProp(self::GetName() . '::EnableModule', $EnableModule);
                 return $oCoreDecorator->UpdateUserObject($oUser);
             }
             if ($oUser->Role === \Aurora\System\Enums\UserRole::SuperAdmin) {
@@ -256,7 +256,7 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                 if ($iExpireDate > 0 && time() > $iExpireDate) {
                     $oModuleManager = \Aurora\System\Api::GetModuleManager();
                     $sTheme = $oModuleManager->getModuleConfigValue('CoreWebclient', 'Theme');
-                    $sResult = \file_get_contents($this->GetPath().'/templates/Expired.html');
+                    $sResult = \file_get_contents($this->GetPath() . '/templates/Expired.html');
                     $mResult = \strtr($sResult, array(
                         '{{Expired}}' => $this->i18N('HINT_MESSAGE_LINK_EXPIRED'),
                         '{{Theme}}' => $sTheme,
@@ -302,12 +302,12 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                     ) {
                         $oCoreClientModule = \Aurora\System\Api::GetModule('CoreWebclient');
                         if ($oCoreClientModule instanceof \Aurora\System\Module\AbstractModule) {
-                            $sResult = \file_get_contents($oCoreClientModule->GetPath().'/templates/Index.html');
+                            $sResult = \file_get_contents($oCoreClientModule->GetPath() . '/templates/Index.html');
                             if (\is_string($sResult)) {
-                                $oSettings =& \Aurora\System\Api::GetSettings();
+                                $oSettings = &\Aurora\System\Api::GetSettings();
                                 $sFrameOptions = $oSettings->XFrameOptions;
                                 if (0 < \strlen($sFrameOptions)) {
-                                    @\header('X-Frame-Options: '.$sFrameOptions);
+                                    @\header('X-Frame-Options: ' . $sFrameOptions);
                                 }
                                 $aConfig = [
                                     'public_app' => true,
