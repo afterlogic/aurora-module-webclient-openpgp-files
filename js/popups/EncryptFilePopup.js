@@ -226,7 +226,8 @@ EncryptFilePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 			storage: 'all',
 			addContactGroups: false,
 			addUserGroups: false,
-			exceptEmail: this.oFile.sOwnerName
+			exceptEmail: this.oFile.sOwnerName,
+			withoutEmptyEmails: true,
 		},
 		autocompleteCallback = ModulesManager.run(
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]

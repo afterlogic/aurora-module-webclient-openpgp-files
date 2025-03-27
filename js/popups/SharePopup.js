@@ -222,7 +222,8 @@ CSharePopup.prototype.autocompleteCallback = function (oRequest, fResponse)
 			storage: 'all',
 			addContactGroups: false,
 			addUserGroups: false,
-			exceptEmail: this.item.sOwnerName
+			exceptEmail: this.item.sOwnerName,
+			withoutEmptyEmails: true,
 		},
 		autocompleteCallback = ModulesManager.run(
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]

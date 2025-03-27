@@ -350,7 +350,8 @@ SelfDestructingEncryptedMessagePopup.prototype.autocompleteCallback = function (
 			storage: 'all',
 			addContactGroups: false,
 			addUserGroups: false,
-			exceptEmail: App.getUserPublicId()
+			exceptEmail: App.getUserPublicId(),
+			withoutEmptyEmails: true,
 		},
 		autocompleteCallback = ModulesManager.run(
 			'ContactsWebclient', 'getSuggestionsAutocompleteCallback', [suggestParameters]
