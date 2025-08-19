@@ -39,7 +39,7 @@ function CFileView()
 	this.hash = Settings.PublicFileData.Hash ? Settings.PublicFileData.Hash : '';
 	this.fileName = Settings.PublicFileData.Name ? Settings.PublicFileData.Name : '';
 	this.fileSize = Settings.PublicFileData.Size ? Settings.PublicFileData.Size : '';
-	this.fileType = Settings.PublicFileData.Name ? Settings.PublicFileData.Name.split('.')[1] : '';
+	this.fileType = Settings.PublicFileData.Name ? Utils.getFileExtension(Settings.PublicFileData.Name) : '';
 	this.fileUrl = Settings.PublicFileData.Url ? Settings.PublicFileData.Url : '';
 	this.encryptionMode = Settings.PublicFileData.PgpEncryptionMode ? Settings.PublicFileData.PgpEncryptionMode : '';
 	this.recipientEmail = Settings.PublicFileData.PgpEncryptionRecipientEmail ? Settings.PublicFileData.PgpEncryptionRecipientEmail : '';
@@ -208,7 +208,7 @@ CFileView.prototype.play = function ()
 
 CFileView.prototype.isFileVideo = function (sFileName)
 {
-	let sExt = Utils.getFileExtension(sFileName)	;
+	let sExt = Utils.getFileExtension(sFileName);
 
 	return (-1 !== _.indexOf(this.aSupportedVideoExt, sExt.toLowerCase()));
 };
