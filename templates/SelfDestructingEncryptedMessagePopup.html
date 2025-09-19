@@ -15,7 +15,7 @@
 					<span class="input select-recipient">
 						<input id="select_recipient_input" class="value" spellcheck="false" type="text" autocomplete="on"
 							data-bind="value: recipientAutocomplete,
-								valueUpdate: ['blur', 'afterkeydown'],
+								valueUpdate: ['blur', 'afterkeydown', 'input'],
 								autocompleteSimple: {callback: autocompleteCallback.bind($data), dataAccessor: recipientAutocompleteItem},
 								disable: isEncrypting() || password()" />
 						<span class="icon" data-bind="visible: recipientAutocompleteItem() && recipientAutocompleteItem().hasKey"></span>
