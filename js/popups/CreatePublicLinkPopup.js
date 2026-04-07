@@ -102,7 +102,7 @@ CCreatePublicLinkPopup.prototype.createPublicLink = async function ()
 	}
 	else
 	{
-		Screens.showError(oPublicLinkResult.errorMessage || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
+		Screens.showError(TextUtils.encodeHtml(oPublicLinkResult.errorMessage) || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 	}
 };
 

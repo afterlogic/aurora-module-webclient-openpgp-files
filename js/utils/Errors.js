@@ -166,7 +166,7 @@ ErrorsUtils.showPgpErrorByCode = function (oRes, sPgpAction, sDefaultError)
 	
 	if (sError === '' && sDefaultError)
 	{
-		sError = sDefaultError;
+		sError = TextUtils.encodeHtml(sDefaultError);
 	}
 	
 	if (sError === '')
