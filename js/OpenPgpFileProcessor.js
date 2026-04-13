@@ -102,7 +102,7 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 							oResultData.password = sPassword;
 							oResultData.link = oPublicLinkResult.link;
 						} else {
-							Screens.showError(TextUtils.encodeHtml(oPublicLinkResult.errorMessage) || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
+							Screens.showError(TextUtils.stripTags(oPublicLinkResult.errorMessage) || TextUtils.i18n('%MODULENAME%/ERROR_CREATE_PUBLIC_LINK'));
 						}
 					}
 					else
@@ -119,7 +119,9 @@ OpenPgpFileProcessor.processFileEncryption = async function (oFile, oFilesView, 
 	}
 	else
 	{
-		Screens.showError('%MODULENAME%/ERROR_READING_KEY');
+		Screens.showError(
+			TextUtils.i18n('%MODULENAME%/ERROR_READING_KEY')
+		);
 	}
 
 	return oResultData;
