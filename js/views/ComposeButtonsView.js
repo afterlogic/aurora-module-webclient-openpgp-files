@@ -1,6 +1,7 @@
 'use strict';
 
 var
+	_ = require('underscore'),
 	ko = require('knockout'),
 
 	Popups = require('%PathToCoreWebclientModule%/js/Popups.js'),
@@ -27,6 +28,7 @@ CComposeButtonsView.prototype.ViewTemplate = '%ModuleName%_ComposeButtonsView';
  * @param {Function} oCompose.getPlainText Returns plain text from html editor. If html mode is switched on html text will be converted to plain and returned.
  * @param {Function} oCompose.getFromEmail Returns message sender email.
  * @param {Function} oCompose.getRecipientEmails Returns array of message recipients.
+ * @param {Function} oCompose.getRecipientsInfo Returns array of recipient info objects from compose.
  * @param {Function} oCompose.saveSilently Saves message silently (without buttons disabling and any info messages).
  * @param {Function} oCompose.setPlainTextMode Sets plain text mode switched on.
  * @param {Function} oCompose.setPlainText Sets plain text to html editor.
@@ -89,18 +91,56 @@ CComposeButtonsView.prototype.doAfterPopulatingMessage = function (oMessageProps
 	}
 };
 
+/**
+ * @returns {Object|null} First compose recipient for self-destruct popup prefill.
+ */
+CComposeButtonsView.prototype.getFirstRecipientInfo = function ()
+{
+	if (!this.oCompose || !_.isFunction(this.oCompose.getRecipientEmails)) {
+		return null;
+	}
+
+	const
+		aRecipientEmails = this.oCompose.getRecipientEmails(),
+		sFirstEmail = aRecipientEmails.length > 0 ? aRecipientEmails[0] : ''
+	;
+
+	if (!sFirstEmail) {
+		return null;
+	}
+
+	const oFromCompose = _.find(this.oCompose.getRecipientsInfo(), oInfo => {
+		return oInfo && oInfo.email === sFirstEmail;
+	});
+
+	if (oFromCompose) {
+		if (!oFromCompose.uuid && oFromCompose.id) {
+			return _.extend({}, oFromCompose, { uuid: oFromCompose.id });
+		}
+
+		return oFromCompose;
+	}
+
+	return {
+		label: sFirstEmail,
+		value: sFirstEmail,
+		email: sFirstEmail,
+		hasKey: false,
+		uuid: ''
+	};
+};
+
 CComposeButtonsView.prototype.send = function ()
 {
 	if (!this.oCompose) {
 		return;
 	}
 
-	const
-		recipientsInfo = this.oCompose.getRecipientsInfo(),
-		firstRecipientInfo = recipientsInfo.length > 0 ? recipientsInfo[0] : null
-	;
-	Popups.showPopup(SelfDestructingEncryptedMessagePopup, [this.oCompose.getSubject(),
-		this.oCompose.getPlainText(), firstRecipientInfo, this.oCompose.getFromEmail(),
+	Popups.showPopup(SelfDestructingEncryptedMessagePopup, [
+		this.oCompose.getSubject(),
+		this.oCompose.getPlainText(),
+		this.getFirstRecipientInfo(),
+		this.oCompose.getFromEmail(),
 		this.oCompose.getSelectedSender()
 	]);
 };

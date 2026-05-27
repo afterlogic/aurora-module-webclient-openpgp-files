@@ -15,7 +15,8 @@ let
 	Ajax = require('%PathToCoreWebclientModule%/js/Ajax.js'),
 	Settings = require('modules/%ModuleName%/js/Settings.js'),
 	UserSettings = require('%PathToCoreWebclientModule%/js/Settings.js'),
-	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor')
+	OpenPgpEncryptor = ModulesManager.run('OpenPgpWebclient', 'getOpenPgpEncryptor'),
+	AddressUtils = require('%PathToCoreWebclientModule%/js/utils/Address.js')
 ;
 /**
  * @constructor
@@ -74,6 +75,26 @@ function SelfDestructingEncryptedMessagePopup()
 		{
 			this.recipientAutocompleteItem(null);
 		}
+
+		const oParts = AddressUtils.getEmailParts($.trim(sItem));
+		
+		if (!oParts || !oParts.email) {
+			return;
+		}
+
+		const oCurrent = this.recipientAutocompleteItem();
+		
+		if (oCurrent && oCurrent.email === oParts.email) {
+			return;
+		}
+
+		this.recipientAutocompleteItem({
+			label: sItem,
+			value: sItem,
+			email: oParts.email,
+			hasKey: false,
+			uuid: ''
+		});
 	}, this);
 	this.recipientAutocompleteItem.subscribe(oItem => {
 		if (oItem)
@@ -359,7 +380,6 @@ SelfDestructingEncryptedMessagePopup.prototype.autocompleteCallback = function (
 	;
 
 	if (_.isFunction(autocompleteCallback)) {
-		this.recipientAutocompleteItem(null);
 		autocompleteCallback(oRequest, fResponse);
 	}
 };
