@@ -276,20 +276,22 @@ class Module extends \Aurora\System\Module\AbstractWebclientModule
                 if ($oUser) {
                     $bPrevState = \Aurora\System\Api::skipCheckUserRole(true);
 
-                    $aCurSession = \Aurora\System\Api::GetUserSession();
-                    \Aurora\System\Api::SetUserSession([
-                        'UserId' => $oUser->Id
-                    ]);
+                    try {
+                        $aCurSession = \Aurora\System\Api::GetUserSession();
+                        \Aurora\System\Api::SetUserSession([
+                            'UserId' => $oUser->Id
+                        ]);
 
-                    $sType = isset($aData['Type']) ? $aData['Type'] : '';
-                    $sPath = isset($aData['Path']) ? $aData['Path'] : '';
-                    $sName = isset($aData['Name']) ? $aData['Name'] : '';
+                        $sType = isset($aData['Type']) ? $aData['Type'] : '';
+                        $sPath = isset($aData['Path']) ? $aData['Path'] : '';
+                        $sName = isset($aData['Name']) ? $aData['Name'] : '';
 
-                    $aFileInfo = $this->oFilesdecorator->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
+                        $aFileInfo = $this->oFilesdecorator->GetFileInfo($aData['UserId'], $sType, $sPath, $sName);
 
-                    \Aurora\System\Api::SetUserSession($aCurSession);
-
-                    \Aurora\System\Api::skipCheckUserRole($bPrevState);
+                        \Aurora\System\Api::SetUserSession($aCurSession);
+                    } finally {
+                        \Aurora\System\Api::skipCheckUserRole($bPrevState);
+                    }
                     $bIsEncyptedFile = $aFileInfo
                         && isset($aFileInfo->ExtendedProps)
                         && isset($aFileInfo->ExtendedProps['ParanoidKeyPublic']);
