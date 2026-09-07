@@ -1,4 +1,4 @@
-<div class="public-page-card" data-bind="css: {'media': isMedia()}">
+<div class="public-page-card" data-test-id="files-pub-page" data-bind="css: {'media': isMedia()}">
 	<div class="fields" data-bind="if: ExpireDateMessage">
 		<div class="fieldset">
 			<div class="row">
@@ -10,7 +10,7 @@
 		<div class="item_content">
 			<span class="data">
 				<span class="icon" data-bind="css: fileType"></span>
-				<span class="name" data-bind="text: fileName"></span>
+				<span class="name" data-test-id="files-pub-name" data-bind="text: fileName"></span>
 				<span class="size" data-bind="text: fileSize"></span>
 			</span>
 		</div>
@@ -53,7 +53,7 @@
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT'}, visible: !isDownloadingAndDecrypting()"></span>
 			<span data-bind="i18n: {'key':  '%MODULENAME%/ACTION_DOWNLOAD_AND_DECRYPT_IN_PROGRESS'}, visible: isDownloadingAndDecrypting()"></span>
 		</span>
-		<a class="button button-fill download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink && !isUrlFile"></a>
+		<a class="button button-fill download" data-test-id="files-pub-download" data-bind="attr: {href: fileUrl}, i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}, visible: !bSecuredLink && !isUrlFile"></a>
 		<span class="button button-fill" data-bind="click: securedLinkDownload,
 			visible: bSecuredLink && !isUrlFile,
 			i18n: {'key':  'COREWEBCLIENT/ACTION_DOWNLOAD_FILE'}">
